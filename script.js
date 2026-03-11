@@ -8,6 +8,8 @@ const panelClusterCount = document.getElementById("panelClusterCount");
 const composerStatus = document.getElementById("composerStatus");
 const featuredGrid = document.getElementById("featuredGrid");
 const flowList = document.getElementById("flowList");
+const activeFilter = document.getElementById("activeFilter");
+const clearFilterBtn = document.getElementById("clearFilterBtn");
 const cityList = document.getElementById("cityList");
 const signalCard = document.getElementById("signalCard");
 const cityField = document.getElementById("city");
@@ -28,6 +30,15 @@ const modalMore = document.getElementById("modalMore");
 const closeModalBtn = document.getElementById("closeModalBtn");
 
 let readSignals = [];
+let flowFilter = { type: "all", value: "" };
+
+function countryToFlag(countryCode) {
+  const normalized = (countryCode || "").toUpperCase();
+  if (normalized.length !== 2) {
+    return "🌐";
+  }
+  return String.fromCodePoint(...[...normalized].map((char) => 127397 + char.charCodeAt(0)));
+}
 
 function updateClock() {
   const now = new Date();
@@ -131,8 +142,9 @@ function closeModal() {
   modalMask.classList.remove("show");
 }
 
-function buildDetailMarkup(cluster) {
+function buildDetailMarkup(cluster, city, countryCode) {
   return `
+    <div class="detail-updating">Updating • ${countryToFlag(countryCode)} ${city || "Global"}</div>
     <div class="detail-grid">
       <div class="detail-card">
         <h3>Related signals</h3>
@@ -164,12 +176,13 @@ function createSignalItem(city, country, cluster, message) {
 
   article.className = "flow-item signal open";
   article.dataset.city = city;
+  article.dataset.country = country.slice(0, 2).toUpperCase();
   article.dataset.cluster = cluster || "Unclustered observation";
   article.innerHTML = `
     <button type="button" class="signal-trigger flow-trigger" aria-expanded="true">
       <div class="flow-top">
-        <span class="flow-flag">${country.slice(0, 2).toUpperCase()}</span>
-        <span>${city}</span>
+        <span class="flow-flag filter-flag" data-filter-country="${country.slice(0, 2).toUpperCase()}" tabindex="0" role="button">${country.slice(0, 2).toUpperCase()}</span>
+        <span class="filter-city" data-filter-city="${city}" tabindex="0" role="button">${city}</span>
         <span>${time}</span>
         <span class="tag">${article.dataset.cluster}</span>
       </div>
@@ -179,7 +192,7 @@ function createSignalItem(city, country, cluster, message) {
   `;
 
   article.querySelector(".flow-text").textContent = message;
-  article.querySelector(".signal-details").innerHTML = buildDetailMarkup(article.dataset.cluster);
+  article.querySelector(".signal-details").innerHTML = buildDetailMarkup(article.dataset.cluster, city, article.dataset.country);
   return article;
 }
 
@@ -232,6 +245,81 @@ function bindSignalToggles(root = document) {
   });
 }
 
+function applyFlowFilter() {
+  const signals = getSignals();
+  signals.forEach((signal) => {
+    let visible = true;
+    if (flowFilter.type === "country") {
+      visible = (signal.dataset.country || "").toUpperCase() === flowFilter.value;
+    } else if (flowFilter.type === "city") {
+      visible = (signal.dataset.city || "") === flowFilter.value;
+    }
+    signal.style.display = visible ? "" : "none";
+  });
+
+  if (!activeFilter) {
+    return;
+  }
+  if (flowFilter.type === "all") {
+    activeFilter.textContent = "当前筛选：全部地区";
+  } else if (flowFilter.type === "country") {
+    activeFilter.textContent = `当前筛选：国家 ${flowFilter.value}`;
+  } else {
+    activeFilter.textContent = `当前筛选：城市 ${flowFilter.value}`;
+  }
+}
+
+function setFlowFilter(type, value) {
+  if (flowFilter.type === type && flowFilter.value === value) {
+    flowFilter = { type: "all", value: "" };
+  } else {
+    flowFilter = { type, value };
+  }
+  applyFlowFilter();
+}
+
+function bindFlowFilters(root = document) {
+  root.querySelectorAll(".filter-flag").forEach((node) => {
+    if (node.dataset.filterBound === "true") {
+      return;
+    }
+    node.dataset.filterBound = "true";
+    node.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const code = (node.dataset.filterCountry || node.textContent || "").trim().toUpperCase();
+      if (code) {
+        setFlowFilter("country", code);
+      }
+    });
+    node.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        node.click();
+      }
+    });
+  });
+
+  root.querySelectorAll(".filter-city").forEach((node) => {
+    if (node.dataset.filterBound === "true") {
+      return;
+    }
+    node.dataset.filterBound = "true";
+    node.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const city = (node.dataset.filterCity || node.textContent || "").trim();
+      if (city) {
+        setFlowFilter("city", city);
+      }
+    });
+    node.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        node.click();
+      }
+    });
+  });
+}
+
 function clearFields() {
   cityField.value = "";
   countryField.value = "";
@@ -253,6 +341,7 @@ function submitSignal() {
   const signal = createSignalItem(city, country, cluster, message);
   flowList.prepend(signal);
   bindSignalToggles(signal);
+  bindFlowFilters(signal);
   updateOrInsertFeaturedCard(city, signal.dataset.cluster, message);
   updateCounts();
   refreshHeadlineCluster();
@@ -321,6 +410,12 @@ clearButton.addEventListener("click", () => {
 drawWorldBtn.addEventListener("click", drawWorldSignal);
 drawAiBtn.addEventListener("click", drawAiSignal);
 openReadBtn.addEventListener("click", openReadList);
+if (clearFilterBtn) {
+  clearFilterBtn.addEventListener("click", () => {
+    flowFilter = { type: "all", value: "" };
+    applyFlowFilter();
+  });
+}
 closeModalBtn.addEventListener("click", closeModal);
 modalMask.addEventListener("click", (event) => {
   if (event.target === modalMask) {
@@ -352,6 +447,8 @@ refreshHeadlineCluster();
 syncFeaturedCards();
 updateCityList();
 bindSignalToggles();
+bindFlowFilters();
+applyFlowFilter();
 showSignalCard(getSignalData(getSignals()[0]));
 setComposerStatus("等待输入", false);
 setInterval(updateClock, 1000);
