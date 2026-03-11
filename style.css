@@ -484,6 +484,13 @@ button:hover { transform: translateY(-1px); }
   margin-top: 10px;
 }
 
+<<<<<<< HEAD
+=======
+.triangle-note::before {
+  content: "¡ø ";
+}
+
+>>>>>>> a9a11a577e8072b48cb5025439a0cce43e00acfd
 .signal-display {
   min-height: 360px;
   display: flex;
