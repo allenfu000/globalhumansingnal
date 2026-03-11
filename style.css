@@ -2,16 +2,16 @@
 
 :root {
   color-scheme: dark;
-  --bg: radial-gradient(circle at 0% 0%, #0d2a1a 0, #051a10 40%, #021208 100%);
-  --text: #e8f5ee;
-  --muted: rgba(232, 245, 238, 0.72);
-  --muted-soft: rgba(232, 245, 238, 0.56);
+  --bg: radial-gradient(circle at 0% 0%, #1b2550 0, #050b16 40%, #020612 100%);
+  --text: #eef3ff;
+  --muted: rgba(235, 242, 255, 0.72);
+  --muted-soft: rgba(235, 242, 255, 0.56);
   --line: rgba(255,255,255,0.08);
-  --line-strong: rgba(100, 220, 140, 0.4);
+  --line-strong: rgba(120,180,255,0.35);
   --panel: rgba(255,255,255,0.03);
   --panel-strong: rgba(0,0,0,0.22);
-  --blue: #7dd89d;
-  --white-pill: #e8f5ee;
+  --blue: #8ec5ff;
+  --white-pill: #f0f4fb;
 }
 
 body {
@@ -31,11 +31,11 @@ button, input, textarea { font: inherit; }
   margin: 32px auto 40px;
   padding: 20px 22px 72px;
   border-radius: 28px;
-  background: radial-gradient(circle at top left, rgba(100, 220, 140, 0.14), transparent 55%)
+  background: radial-gradient(circle at top left, rgba(120, 180, 255, 0.12), transparent 55%)
               border-box,
-              radial-gradient(circle at bottom right, rgba(60, 180, 100, 0.12), transparent 55%)
+              radial-gradient(circle at bottom right, rgba(147, 92, 255, 0.16), transparent 55%)
               border-box,
-              rgba(4, 18, 12, 0.94);
+              rgba(4, 9, 20, 0.94);
   box-shadow:
     0 30px 80px rgba(0, 0, 0, 0.72),
     0 0 0 1px rgba(255, 255, 255, 0.02);
@@ -75,7 +75,7 @@ button, input, textarea { font: inherit; }
 
 .status-pill,
 .composer-status {
-  border: 1px solid rgba(100,220,140,0.25);
+  border: 1px solid rgba(255,255,255,0.14);
   border-radius: 999px;
   padding: 12px 16px;
   font-size: 13px;
@@ -85,9 +85,9 @@ button, input, textarea { font: inherit; }
 }
 
 .composer-status.is-live {
-  border-color: rgba(100,220,140,0.35);
-  background: rgba(100,220,140,0.14);
-  color: #c8f0d8;
+  border-color: rgba(120,180,255,0.3);
+  background: rgba(120,180,255,0.12);
+  color: #dcecff;
 }
 
 .topbar-clock {
@@ -115,8 +115,8 @@ button, input, textarea { font: inherit; }
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #6ed88e, #2d9d5c 55%, #0d2a1a 100%);
-  box-shadow: 0 0 12px rgba(72,200,120,0.5);
+  background: radial-gradient(circle at 35% 35%, #6ec8ff, #2f80ff 55%, #112a54 100%);
+  box-shadow: 0 0 12px rgba(72,151,255,0.45);
   flex: 0 0 auto;
 }
 
@@ -186,13 +186,13 @@ button, input, textarea { font: inherit; }
 
 .featured-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(100,220,140,0.4);
+  border-color: rgba(120,180,255,0.35);
 }
 
 .featured-card.system,
 .featured-card.active {
   background: linear-gradient(180deg, rgba(20,41,78,0.38), rgba(14,24,42,0.5));
-  border-color: rgba(80,200,120,0.25);
+  border-color: rgba(100,160,255,0.2);
 }
 
 .featured-card.stat-card {
@@ -283,7 +283,7 @@ textarea {
 
 .text-input:focus,
 textarea:focus {
-  border-color: rgba(100,220,140,0.4);
+  border-color: rgba(120,180,255,0.35);
 }
 
 textarea {
@@ -510,7 +510,7 @@ button:hover { transform: translateY(-1px); }
   flex: 1;
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(16,29,57,0.62), rgba(9,16,31,0.82));
-  border: 1px solid rgba(100,220,140,0.22);
+  border: 1px solid rgba(120,180,255,0.18);
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -557,7 +557,7 @@ button:hover { transform: translateY(-1px); }
 }
 
 .draw-btn.ai {
-  background: linear-gradient(90deg, #7dd89d, #b8f0c8);
+  background: linear-gradient(90deg, #8ec5ff, #d5e8ff);
 }
 
 .city-list {
