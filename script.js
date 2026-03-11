@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 const clock = document.getElementById("clock");
-=======
-﻿const clock = document.getElementById("clock");
->>>>>>> a9a11a577e8072b48cb5025439a0cce43e00acfd
 const heroSignalCount = document.getElementById("heroSignalCount");
 const headlineCluster = document.getElementById("headlineCluster");
 const signalCount = document.getElementById("signalCount");
@@ -300,11 +296,7 @@ function openReadList() {
       cluster: "History",
       time: "Local prototype",
       original: "当前还没有已抽取的信号记录。",
-<<<<<<< HEAD
       summary: "点击「抽取世界信号」或「查看重点信号」后，这里会显示你看过的 signal。",
-=======
-      summary: "点击“抽取世界信号”或“查看重点信号”后，这里会显示你看过的 signal。",
->>>>>>> a9a11a577e8072b48cb5025439a0cce43e00acfd
       message: "暂无已读 signal"
     });
     return;

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Global Human Signal
 
 ## Project Concept
@@ -362,32 +361,6 @@ AI is allowed to:
 - implement signal stream logic
 - implement input interface
 
-=======
-# Global Human Signal
-
-## Project Concept
-
-Global Human Signal is a minimalist global interface where people record what is happening in their city right now.
-
-The goal is to create a distributed real-time record of human reality.
-
-Users write short signals describing events or observations from their local environment.
-
-Examples of signals:
-
-- "Tokyo subway line delayed."
-- "Heavy snow starting in Helsinki."
-- "Power outage in downtown Buenos Aires."
-- "Crowds gathering near parliament building."
-
-Each message represents a **human signal**.
-
-Signals together form a global flow of real-time information.
-
----
-
-## Interface Philosophy
-
 The interface should be extremely minimal.
 
 Design principles:
@@ -726,5 +699,3 @@ AI is allowed to:
 - implement signal stream logic
 - implement input interface
 
->>>>>>> a9a11a577e8072b48cb5025439a0cce43e00acfd
-The goal is to transform the page into a minimal working prototype of the Global Human Signal system.
