@@ -2,7 +2,7 @@
 
 :root {
   color-scheme: dark;
-  --bg: #050b16;
+  --bg: radial-gradient(circle at 0% 0%, #1b2550 0, #050b16 40%, #020612 100%);
   --text: #eef3ff;
   --muted: rgba(235, 242, 255, 0.72);
   --muted-soft: rgba(235, 242, 255, 0.56);
@@ -16,7 +16,9 @@
 
 body {
   margin: 0;
-  background: #050b16;
+  min-height: 100vh;
+  background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
@@ -26,8 +28,17 @@ button, input, textarea { font: inherit; }
 
 .container {
   width: min(1180px, 94vw);
-  margin: 0 auto;
-  padding: 20px 0 80px;
+  margin: 32px auto 40px;
+  padding: 20px 22px 72px;
+  border-radius: 28px;
+  background: radial-gradient(circle at top left, rgba(120, 180, 255, 0.12), transparent 55%)
+              border-box,
+              radial-gradient(circle at bottom right, rgba(147, 92, 255, 0.16), transparent 55%)
+              border-box,
+              rgba(4, 9, 20, 0.94);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .topbar {
@@ -124,12 +135,15 @@ button, input, textarea { font: inherit; }
 }
 
 .section {
-  margin-top: 28px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: linear-gradient(180deg, rgba(7,14,27,0.95), rgba(8,14,23,0.92));
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  margin-top: 26px;
+  padding: 18px 18px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(7, 14, 27, 0.85));
+  box-shadow:
+    0 18px 45px rgba(0,0,0,0.35);
+  backdrop-filter: blur(16px);
 }
 
 .section-header {
