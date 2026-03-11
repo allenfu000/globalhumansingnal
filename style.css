@@ -53,16 +53,16 @@ button, input, textarea { font: inherit; }
 
 .brand h1 {
   margin: 0;
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: clamp(36px, 5.5vw, 64px);
   line-height: 0.95;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .brand p {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
@@ -663,7 +663,7 @@ button:hover { transform: translateY(-1px); }
   }
 
   .brand h1 {
-    font-size: 34px;
+    font-size: 42px;
   }
 
   .section {
