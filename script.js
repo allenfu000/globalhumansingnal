@@ -86,7 +86,7 @@ function updateCounts() {
 function refreshHeadlineCluster() {
   const latestSignal = getSignals()[0];
   const cluster = latestSignal ? latestSignal.dataset.cluster || "未归类观察" : "等待信号";
-  headlineCluster.textContent = "当前重点事件：" + cluster;
+  headlineCluster.textContent = "当前精选事件：" + cluster;
 }
 
 function syncFeaturedCards() {
@@ -376,7 +376,7 @@ function drawAiSignal() {
     return;
   }
 
-  const activeHeadline = headlineCluster.textContent.replace("当前重点事件：", "").trim();
+  const activeHeadline = headlineCluster.textContent.replace("当前精选事件：", "").trim();
   const preferred = signals.find((signal) => signal.dataset.cluster === activeHeadline) || signals[0];
   const data = getSignalData(preferred);
   readSignals.unshift(data);
