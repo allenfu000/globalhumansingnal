@@ -4,5 +4,8 @@
 /index.html
   Cache-Control: no-store, no-cache, must-revalidate
 
+/wx-share.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
 /*.html
   Cache-Control: no-store, no-cache, must-revalidate
