@@ -155,10 +155,10 @@ function truncateWithAsciiEllipsis(text, maxChars) {
 function applyFeaturedCompactPreview() {
   const rules = [
     { selector: ".featured-time", maxChars: 18 },
-    { selector: ".featured-location", maxChars: 20 },
-    { selector: ".featured-event", maxChars: 24 },
-    { selector: ".featured-origin", maxChars: 34 },
-    { selector: ".featured-ai", maxChars: 36 }
+    { selector: ".featured-location", maxChars: 24 },
+    { selector: ".featured-event", maxChars: 32 },
+    { selector: ".featured-origin", maxChars: 42 },
+    { selector: ".featured-ai", maxChars: 46 }
   ];
 
   featuredCards.forEach((card) => {

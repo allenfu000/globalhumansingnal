@@ -225,7 +225,7 @@ textarea {
   display: block;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
 }
 
 .featured-popover {
@@ -245,6 +245,9 @@ textarea {
   transform-origin: center center;
   filter: blur(1px) saturate(0.95);
   pointer-events: none;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   will-change: transform, opacity, filter;
   transition:
     opacity 320ms ease,
@@ -616,7 +619,7 @@ textarea {
 
   .featured-card {
     min-height: 132px;
-    max-height: 148px;
+    max-height: 176px;
     padding: 12px;
     gap: 6px;
   }
@@ -672,7 +675,7 @@ textarea {
   }
 
   .submit-left textarea {
-    min-height: 132px;
+    min-height: 160px;
     padding: 12px;
     font-size: 16px;
   }
@@ -742,7 +745,7 @@ textarea {
   }
 
   .pool-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
