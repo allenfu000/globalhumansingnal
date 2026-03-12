@@ -1,39 +1,46 @@
 const clock = document.getElementById("clock");
-const heroSignalCount = document.getElementById("heroSignalCount");
-const signalCount = document.getElementById("signalCount");
-const clusterCount = document.getElementById("clusterCount");
-const panelSignalCount = document.getElementById("panelSignalCount");
-const panelClusterCount = document.getElementById("panelClusterCount");
-const composerStatus = document.getElementById("composerStatus");
-const featuredGrid = document.getElementById("featuredGrid");
+const heroStatus = document.getElementById("heroStatus");
 const flowList = document.getElementById("flowList");
-const activeFilter = document.getElementById("activeFilter");
-const clearFilterBtn = document.getElementById("clearFilterBtn");
-const cityList = document.getElementById("cityList");
-const signalCard = document.getElementById("signalCard");
+const poolGrid = document.getElementById("poolGrid");
+const poolCount = document.getElementById("poolCount");
 const messageField = document.getElementById("message");
 const submitButton = document.getElementById("submitSignal");
-const drawWorldBtn = document.getElementById("drawWorldBtn");
-const drawAiBtn = document.getElementById("drawAiBtn");
-const openReadBtn = document.getElementById("openReadBtn");
-const modalMask = document.getElementById("modalMask");
-const modalTitle = document.getElementById("modalTitle");
-const modalMeta = document.getElementById("modalMeta");
-const modalOriginal = document.getElementById("modalOriginal");
-const modalAi = document.getElementById("modalAi");
-const modalMore = document.getElementById("modalMore");
-const closeModalBtn = document.getElementById("closeModalBtn");
+const featuredCards = document.querySelectorAll("[data-featured-card]");
 
-let readSignals = [];
-let flowFilter = { type: "all", value: "" };
-
-function countryToFlag(countryCode) {
-  const normalized = (countryCode || "").toUpperCase();
-  if (normalized.length !== 2) {
-    return "🌐";
+const liveSignals = [
+  {
+    flag: "🇯🇵",
+    country: "日本",
+    city: "东京",
+    time: "21:14",
+    text: "东京地铁延误正在扩大",
+    tag: "#交通"
+  },
+  {
+    flag: "🇫🇮",
+    country: "芬兰",
+    city: "赫尔辛基",
+    time: "20:48",
+    text: "主干道积雪增厚导致车速下降",
+    tag: "#天气"
+  },
+  {
+    flag: "🇦🇷",
+    country: "阿根廷",
+    city: "布宜诺斯艾利斯",
+    time: "20:06",
+    text: "多个路口停电后交通灯暂时失效",
+    tag: "#停电"
+  },
+  {
+    flag: "🇫🇷",
+    country: "法国",
+    city: "巴黎",
+    time: "19:42",
+    text: "议会周边人流增加，街区通行变慢",
+    tag: "#集会"
   }
-  return String.fromCodePoint(...[...normalized].map((char) => 127397 + char.charCodeAt(0)));
-}
+];
 
 function updateClock() {
   const now = new Date();
@@ -42,407 +49,334 @@ function updateClock() {
     minute: "2-digit",
     second: "2-digit",
     timeZone: "UTC"
-  }) + " 世界标准时";
+  }) + " 世界标准时间";
 }
 
-function setComposerStatus(text, live) {
-  if (!composerStatus) {
-    return;
+function updateHeroAndPoolCount() {
+  const countText = String(liveSignals.length).padStart(2, "0");
+  const heroCount = heroStatus.querySelector(".hero-count");
+  if (heroCount) {
+    heroCount.textContent = countText;
   }
-  composerStatus.textContent = text;
-  composerStatus.classList.toggle("is-live", Boolean(live));
+  poolCount.textContent = `可见信号 ${countText}`;
 }
 
-function getSignals() {
-  return Array.from(flowList.querySelectorAll(".signal"));
-}
-
-function getSignalData(signal) {
-  const city = signal.dataset.city || signal.querySelector(".flow-top span:nth-child(2)")?.textContent || "未知地区";
-  const country = (signal.dataset.country || signal.querySelector(".flow-flag")?.textContent || "").toUpperCase();
-  const cluster = signal.dataset.cluster || "未归类观察";
-  const time = signal.querySelector(".flow-top span:nth-child(3)")?.textContent || "世界标准时";
-  const message = signal.querySelector(".flow-text")?.textContent || "";
-  const original = message;
-  const summary = signal.querySelector(".detail-card p")?.textContent || message;
-  return { city, country, cluster, time, message, original, summary };
-}
-
-function updateCounts() {
-  const signals = getSignals();
-  const clusters = new Set(signals.map((signal) => signal.dataset.cluster || "未归类观察"));
-  const signalText = String(signals.length).padStart(2, "0");
-  const clusterText = String(clusters.size).padStart(2, "0");
-
-  signalCount.textContent = signalText;
-  clusterCount.textContent = clusterText;
-  panelSignalCount.textContent = signalText;
-  panelClusterCount.textContent = clusterText;
-  heroSignalCount.textContent = "全球信号";
-}
-
-function refreshHeadlineCluster() {
-  // 主视觉已简化为仅显示品牌，不再渲染动态说明。
-}
-
-function syncFeaturedCards() {
-  const latestSignal = getSignals()[0];
-  const activeCluster = latestSignal ? latestSignal.dataset.cluster || "未归类观察" : "";
-
-  featuredGrid.querySelectorAll("[data-cluster-card]").forEach((card) => {
-    card.classList.toggle("active", card.dataset.clusterCard === activeCluster);
-  });
-}
-
-function updateCityList() {
-  const cities = [];
-  getSignals().forEach((signal) => {
-    const city = signal.dataset.city;
-    const country = (signal.dataset.country || "").toUpperCase();
-    if (city && !cities.some((entry) => entry.city === city)) {
-      cities.push({ city, country });
-    }
-  });
-
-  cityList.innerHTML = "";
-  cities.slice(0, 8).forEach((entry) => {
-    const tag = document.createElement("span");
-    tag.textContent = `${countryToFlag(entry.country)} ${entry.city}`;
-    cityList.appendChild(tag);
-  });
-}
-
-function showSignalCard(data) {
-  signalCard.classList.remove("empty");
-  const titleWithFlag = `${countryToFlag(data.country)} ${data.city}`;
-  signalCard.innerHTML = `
-    <div>
-      <div class="signal-status">${data.cluster}</div>
-      <div class="signal-title">${titleWithFlag}</div>
-      <div class="signal-body">${data.message}</div>
-    </div>
-    <div class="signal-bottom">
-      <span class="tag">${data.time}</span>
-      <span class="signal-mini">${data.summary}</span>
-    </div>
-  `;
-}
-
-function openModal(data) {
-  modalTitle.textContent = `${countryToFlag(data.country)} ${data.city} · ${data.cluster}`;
-  modalMeta.textContent = data.time;
-  modalOriginal.textContent = data.original;
-  modalAi.textContent = data.summary;
-  modalMore.textContent = "系统会保留原始信号作为证据，并在需要时归并进更高层级的事件簇。";
-  modalMask.classList.add("show");
-}
-
-function closeModal() {
-  modalMask.classList.remove("show");
-}
-
-function buildDetailMarkup(cluster, city, countryCode) {
-  return `
-    <div class="detail-updating">更新中 • ${countryToFlag(countryCode)} ${city || "全球"}</div>
-    <div class="detail-grid">
-      <div class="detail-card">
-        <h3>关联信号</h3>
-        <p>正在等待来自附近区域、可相互印证的 ${cluster} 补充报告。</p>
-      </div>
-      <div class="detail-card">
-        <h3>时间线</h3>
-        <p>该记录已写入当前本地原型流，并进入持续更新状态。</p>
-      </div>
-      <div class="detail-card">
-        <h3>附近地点</h3>
-        <ul>
-          <li>等待更多本地证据</li>
-          <li>预留事件簇扩展位</li>
-          <li>支持继续行内展开查看</li>
-        </ul>
-      </div>
-    </div>
-  `;
-}
-
-function createSignalItem(city, country, cluster, message) {
+function createSignalElement(signal) {
   const article = document.createElement("article");
-  const countryCode = country.slice(0, 2).toUpperCase();
-  const time = new Date().toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC"
-  }) + " 世界标准时";
-
-  article.className = "flow-item signal open";
-  article.dataset.city = city;
-  article.dataset.country = countryCode;
-  article.dataset.cluster = cluster || "未归类观察";
+  article.className = "live-item signal";
   article.innerHTML = `
-    <button type="button" class="signal-trigger flow-trigger" aria-expanded="true">
-      <div class="flow-top">
-        <span class="flow-flag filter-flag" data-filter-country="${countryCode}" tabindex="0" role="button">${countryCode}</span>
-        <span class="filter-city" data-filter-city="${city}" tabindex="0" role="button">${countryToFlag(countryCode)} ${city}</span>
-        <span>${time}</span>
-        <span class="tag">${article.dataset.cluster}</span>
+    <button type="button" class="signal-trigger" aria-expanded="false">
+      <div class="live-meta">
+        <span>${signal.flag}</span>
+        <span class="live-location">${signal.country} · ${signal.city}</span>
+        <span class="live-time">· ${signal.time}</span>
+        <span class="live-tag">${signal.tag}</span>
       </div>
-      <div class="flow-text"></div>
+      <p class="live-text">${signal.text}</p>
     </button>
-    <div class="signal-details"></div>
+    <div class="signal-details">
+      <p>△ 时间线：正在持续写入本地原始记录。</p>
+      <p>△ 关联信号：附近区域出现相似关键词。</p>
+      <p>△ 附近地点：可在展开面板继续查看。</p>
+    </div>
   `;
 
-  article.querySelector(".flow-text").textContent = message;
-  article.querySelector(".signal-details").innerHTML = buildDetailMarkup(article.dataset.cluster, city, article.dataset.country);
+  const trigger = article.querySelector(".signal-trigger");
+  trigger.addEventListener("click", () => {
+    const isOpen = article.classList.toggle("open");
+    trigger.setAttribute("aria-expanded", String(isOpen));
+  });
   return article;
 }
 
-function updateOrInsertFeaturedCard(city, countryCode, cluster, message) {
-  if (!cluster) {
-    return;
-  }
+function renderLiveFeed() {
+  flowList.innerHTML = "";
+  liveSignals.forEach((signal) => {
+    flowList.appendChild(createSignalElement(signal));
+  });
+}
 
-  let card = featuredGrid.querySelector(`[data-cluster-card="${CSS.escape(cluster)}"]`);
-  if (!card) {
-    card = document.createElement("article");
-    card.className = "featured-card";
-    card.dataset.clusterCard = cluster;
-    card.innerHTML = `
-      <div class="featured-head">
-        <div class="featured-code"></div>
-        <div class="featured-flag"></div>
-      </div>
-      <div>
-        <div class="featured-title"></div>
-      </div>
-      <div class="featured-meta"></div>
+function renderPool() {
+  poolGrid.innerHTML = "";
+  liveSignals.concat(liveSignals).forEach((signal, index) => {
+    const item = document.createElement("article");
+    item.className = "pool-item";
+    item.innerHTML = `
+      <div class="pool-row">${signal.flag} ${signal.country} · ${signal.city} · ${signal.time}</div>
+      <div class="pool-main">${signal.text}</div>
+      <div class="pool-row">${signal.tag} · 原始信号 #${index + 1}</div>
     `;
-    featuredGrid.prepend(card);
-  }
-
-  const normalizedCountry = (countryCode || "").toUpperCase();
-  card.querySelector(".featured-code").textContent = normalizedCountry || "UN";
-  card.querySelector(".featured-head .featured-flag").textContent = countryToFlag(normalizedCountry);
-  card.querySelector(".featured-title").textContent = cluster;
-  card.querySelector(".featured-meta").textContent = message;
-
-  const cards = Array.from(featuredGrid.querySelectorAll(".featured-card"));
-  if (cards.length > 6) {
-    cards[cards.length - 1].remove();
-  }
-}
-
-function bindSignalToggles(root = document) {
-  root.querySelectorAll(".signal-trigger").forEach((button) => {
-    if (button.dataset.bound === "true") {
-      return;
-    }
-
-    button.dataset.bound = "true";
-    button.addEventListener("click", () => {
-      const signal = button.closest(".signal");
-      const isOpen = signal.classList.toggle("open");
-      button.setAttribute("aria-expanded", String(isOpen));
-      if (isOpen) {
-        showSignalCard(getSignalData(signal));
-      }
-    });
+    poolGrid.appendChild(item);
   });
-}
-
-function applyFlowFilter() {
-  const signals = getSignals();
-  signals.forEach((signal) => {
-    let visible = true;
-    if (flowFilter.type === "country") {
-      visible = (signal.dataset.country || "").toUpperCase() === flowFilter.value;
-    } else if (flowFilter.type === "city") {
-      visible = (signal.dataset.city || "") === flowFilter.value;
-    }
-    signal.style.display = visible ? "" : "none";
-  });
-
-  if (!activeFilter) {
-    return;
-  }
-  if (flowFilter.type === "all") {
-    activeFilter.textContent = "当前筛选：全部地区";
-  } else if (flowFilter.type === "country") {
-    activeFilter.textContent = `当前筛选：国家 ${flowFilter.value}`;
-  } else {
-    activeFilter.textContent = `当前筛选：城市 ${flowFilter.value}`;
-  }
-}
-
-function setFlowFilter(type, value) {
-  if (flowFilter.type === type && flowFilter.value === value) {
-    flowFilter = { type: "all", value: "" };
-  } else {
-    flowFilter = { type, value };
-  }
-  applyFlowFilter();
-}
-
-function bindFlowFilters(root = document) {
-  root.querySelectorAll(".filter-flag").forEach((node) => {
-    if (node.dataset.filterBound === "true") {
-      return;
-    }
-    node.dataset.filterBound = "true";
-    node.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const code = (node.dataset.filterCountry || node.textContent || "").trim().toUpperCase();
-      if (code) {
-        setFlowFilter("country", code);
-      }
-    });
-    node.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        node.click();
-      }
-    });
-  });
-
-  root.querySelectorAll(".filter-city").forEach((node) => {
-    if (node.dataset.filterBound === "true") {
-      return;
-    }
-    node.dataset.filterBound = "true";
-    node.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const city = (node.dataset.filterCity || node.textContent || "").trim();
-      if (city) {
-        setFlowFilter("city", city);
-      }
-    });
-    node.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        node.click();
-      }
-    });
-  });
-}
-
-function clearFields() {
-  messageField.value = "";
 }
 
 function submitSignal() {
-  const message = messageField.value.trim();
-  const city = "用户提交";
-  const country = "CN";
-  const cluster = "现场观察";
-
-  if (!message) {
-    setComposerStatus("需要填写观察内容", false);
+  const text = messageField.value.trim();
+  if (!text) {
     return;
   }
 
-  const signal = createSignalItem(city, country, cluster, message);
-  flowList.prepend(signal);
-  bindSignalToggles(signal);
-  bindFlowFilters(signal);
-  updateOrInsertFeaturedCard(city, signal.dataset.country, signal.dataset.cluster, message);
-  updateCounts();
-  refreshHeadlineCluster();
-  syncFeaturedCards();
-  updateCityList();
-  showSignalCard(getSignalData(signal));
-  setComposerStatus("信号已发送", true);
-  clearFields();
-}
-
-function drawWorldSignal() {
-  const firstSignal = getSignals()[0];
-  if (!firstSignal) {
-    signalCard.classList.add("empty");
-    signalCard.textContent = "当前本地原型里没有可抽取的信号。";
-    return;
-  }
-
-  const data = getSignalData(firstSignal);
-  readSignals.unshift(data);
-  showSignalCard(data);
-}
-
-function drawAiSignal() {
-  const signals = getSignals();
-  if (!signals.length) {
-    return;
-  }
-
-  const preferred = signals[0];
-  const data = getSignalData(preferred);
-  readSignals.unshift(data);
-  showSignalCard(data);
-}
-
-function openReadList() {
-  if (!readSignals.length) {
-    openModal({
-      city: "已读信号",
-      cluster: "历史",
-      time: "本地原型",
-      original: "当前还没有已抽取的信号记录。",
-      summary: "点击「抽取世界信号」或「查看精选信号」后，这里会显示你看过的信号。",
-      message: "暂无已读信号"
-    });
-    return;
-  }
-
-  const latest = readSignals[0];
-  openModal({
-    city: latest.city,
-    cluster: latest.cluster,
-    time: latest.time,
-    original: readSignals.map((item, index) => `${index + 1}. ${item.city} · ${item.cluster}`).join("；"),
-    summary: "这里记录的是当前会话中被抽取查看过的信号。",
-    message: latest.message
+  const now = new Date().toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC"
   });
+
+  liveSignals.unshift({
+    flag: "🇨🇳",
+    country: "中国",
+    city: "用户提交",
+    time: now,
+    text,
+    tag: "#现场"
+  });
+
+  messageField.value = "";
+  renderLiveFeed();
+  renderPool();
+  updateHeroAndPoolCount();
+}
+
+let featuredPopover = null;
+let featuredPopoverCloseBtn = null;
+let featuredPopoverBody = null;
+let featuredPopoverTitle = null;
+let activeFeaturedCard = null;
+let hidePopoverTimer = null;
+
+function truncateWithAsciiEllipsis(text, maxChars) {
+  const normalized = (text || "").trim();
+  if (normalized.length <= maxChars) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxChars).trim()}...`;
+}
+
+function applyFeaturedCompactPreview() {
+  const rules = [
+    { selector: ".featured-time", maxChars: 18 },
+    { selector: ".featured-location", maxChars: 20 },
+    { selector: ".featured-event", maxChars: 24 },
+    { selector: ".featured-origin", maxChars: 34 },
+    { selector: ".featured-ai", maxChars: 36 }
+  ];
+
+  featuredCards.forEach((card) => {
+    rules.forEach((rule) => {
+      const node = card.querySelector(rule.selector);
+      if (!node) {
+        return;
+      }
+      if (!node.dataset.fullText) {
+        node.dataset.fullText = node.textContent || "";
+      }
+      node.textContent = truncateWithAsciiEllipsis(node.dataset.fullText, rule.maxChars);
+    });
+  });
+}
+
+function ensureFeaturedPopover() {
+  if (featuredPopover) {
+    return;
+  }
+
+  featuredPopover = document.createElement("div");
+  featuredPopover.className = "featured-popover";
+  featuredPopover.setAttribute("aria-hidden", "true");
+  featuredPopover.innerHTML = `
+    <div class="featured-popover-top">
+      <p class="featured-popover-title">详细内容</p>
+      <button type="button" class="featured-popover-close">关闭</button>
+    </div>
+    <div class="featured-popover-body"></div>
+  `;
+
+  document.body.appendChild(featuredPopover);
+  featuredPopoverCloseBtn = featuredPopover.querySelector(".featured-popover-close");
+  featuredPopoverBody = featuredPopover.querySelector(".featured-popover-body");
+  featuredPopoverTitle = featuredPopover.querySelector(".featured-popover-title");
+
+  featuredPopoverCloseBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeFeaturedPopover();
+  });
+}
+
+function getFeaturedCardData(card) {
+  const readText = (selector) => {
+    const node = card.querySelector(selector);
+    if (!node) {
+      return "";
+    }
+    return node.dataset.fullText || node.textContent || "";
+  };
+
+  return {
+    time: readText(".featured-time"),
+    location: readText(".featured-location"),
+    event: readText(".featured-event"),
+    origin: readText(".featured-origin"),
+    ai: readText(".featured-ai")
+  };
+}
+
+function positionFeaturedPopover(card) {
+  if (!featuredPopover) {
+    return;
+  }
+
+  const rect = card.getBoundingClientRect();
+  const desiredWidth = Math.max(rect.width + 220, 700);
+  const popoverWidth = Math.min(desiredWidth, window.innerWidth - 24);
+  featuredPopover.style.width = `${popoverWidth}px`;
+
+  featuredPopover.classList.remove("placement-bottom");
+  featuredPopover.style.visibility = "hidden";
+  featuredPopover.classList.add("is-open");
+  const popoverHeight = featuredPopover.offsetHeight;
+  featuredPopover.classList.remove("is-open");
+  featuredPopover.style.visibility = "";
+
+  let left = rect.left + (rect.width - popoverWidth) / 2;
+  left = Math.max(12, Math.min(left, window.innerWidth - popoverWidth - 12));
+  left = Math.round(left);
+
+  const topAsAbove = rect.top - 24;
+  const showBelow = topAsAbove < 12;
+  const maxTop = window.innerHeight - popoverHeight - 12;
+  const top = showBelow
+    ? Math.min(maxTop, rect.bottom - rect.height * 0.2)
+    : Math.min(maxTop, topAsAbove);
+
+  featuredPopover.style.left = `${left}px`;
+  featuredPopover.style.top = `${Math.round(top)}px`;
+  featuredPopover.classList.toggle("placement-bottom", showBelow);
+}
+
+function openFeaturedPopover(card) {
+  ensureFeaturedPopover();
+
+  if (hidePopoverTimer) {
+    clearTimeout(hidePopoverTimer);
+    hidePopoverTimer = null;
+  }
+
+  const data = getFeaturedCardData(card);
+  featuredPopoverTitle.textContent = data.location || "详细内容";
+  featuredPopoverBody.innerHTML = `
+    <p class="featured-time">${data.time}</p>
+    <p class="featured-location">${data.location}</p>
+    <p class="featured-event">${data.event}</p>
+    <p class="featured-origin">${data.origin}</p>
+    <p class="featured-ai">${data.ai}</p>
+  `;
+
+  if (activeFeaturedCard && activeFeaturedCard !== card) {
+    activeFeaturedCard.classList.remove("is-source-active");
+    activeFeaturedCard.setAttribute("aria-expanded", "false");
+  }
+
+  activeFeaturedCard = card;
+  card.classList.add("is-source-active");
+  card.setAttribute("aria-expanded", "true");
+
+  positionFeaturedPopover(card);
+  featuredPopover.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    featuredPopover.classList.add("is-open");
+  });
+}
+
+function closeFeaturedPopover() {
+  if (!featuredPopover || !activeFeaturedCard) {
+    return;
+  }
+
+  featuredPopover.classList.remove("is-open");
+  featuredPopover.setAttribute("aria-hidden", "true");
+
+  activeFeaturedCard.classList.remove("is-source-active");
+  activeFeaturedCard.setAttribute("aria-expanded", "false");
+  activeFeaturedCard = null;
+
+  hidePopoverTimer = setTimeout(() => {
+    if (featuredPopover) {
+      featuredPopover.style.left = "-9999px";
+      featuredPopover.style.top = "-9999px";
+    }
+  }, 320);
+}
+
+function bindFeaturedCards() {
+  featuredCards.forEach((card) => {
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-expanded", "false");
+
+    card.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (activeFeaturedCard === card) {
+        closeFeaturedPopover();
+      } else {
+        openFeaturedPopover(card);
+      }
+    });
+
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (activeFeaturedCard === card) {
+          closeFeaturedPopover();
+        } else {
+          openFeaturedPopover(card);
+        }
+      }
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!activeFeaturedCard || !featuredPopover) {
+      return;
+    }
+    if (featuredPopover.contains(event.target)) {
+      return;
+    }
+    if (activeFeaturedCard.contains(event.target)) {
+      return;
+    }
+    closeFeaturedPopover();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && activeFeaturedCard) {
+      closeFeaturedPopover();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (activeFeaturedCard) {
+      positionFeaturedPopover(activeFeaturedCard);
+    }
+  });
+
+  window.addEventListener("scroll", () => {
+    if (activeFeaturedCard) {
+      positionFeaturedPopover(activeFeaturedCard);
+    }
+  }, { passive: true });
 }
 
 submitButton.addEventListener("click", submitSignal);
-drawWorldBtn.addEventListener("click", drawWorldSignal);
-drawAiBtn.addEventListener("click", drawAiSignal);
-openReadBtn.addEventListener("click", openReadList);
-if (clearFilterBtn) {
-  clearFilterBtn.addEventListener("click", () => {
-    flowFilter = { type: "all", value: "" };
-    applyFlowFilter();
-  });
-}
-closeModalBtn.addEventListener("click", closeModal);
-modalMask.addEventListener("click", (event) => {
-  if (event.target === modalMask) {
-    closeModal();
-  }
-});
-
 messageField.addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     submitSignal();
   }
 });
 
-messageField.addEventListener("input", () => {
-  setComposerStatus("正在记录输入", true);
-});
-
-getSignals().forEach((signal) => {
-  signal.addEventListener("dblclick", () => {
-    openModal(getSignalData(signal));
-  });
-});
-
 updateClock();
-updateCounts();
-refreshHeadlineCluster();
-syncFeaturedCards();
-updateCityList();
-bindSignalToggles();
-bindFlowFilters();
-applyFlowFilter();
-showSignalCard(getSignalData(getSignals()[0]));
-setComposerStatus("等待输入", false);
+renderLiveFeed();
+renderPool();
+updateHeroAndPoolCount();
+applyFeaturedCompactPreview();
+bindFeaturedCards();
 setInterval(updateClock, 1000);

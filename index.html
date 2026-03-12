@@ -7,368 +7,109 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">
+  <main class="page">
+    <header class="header">
+      <div class="header-left">
         <h1>全球信号</h1>
         <p>现实分布式记录</p>
       </div>
-      <div class="topbar-side">
-        <div class="status-pill">系统在线</div>
-        <div class="topbar-clock" id="clock">世界标准时同步中...</div>
+      <div class="header-right">
+        <div class="header-status">系统在线</div>
+        <div id="clock" class="header-clock">世界标准时间同步中...</div>
       </div>
-    </div>
+    </header>
 
-    <div class="hero-bar">
-      <div class="hero-globe"></div>
-      <div class="hero-bar-text">
-        <strong id="heroSignalCount">全球信号</strong>
-      </div>
-    </div>
-
-    <section class="section section-featured">
-      <div class="section-header">
-        <h2 class="section-title">精选</h2>
-      </div>
-      <div class="featured-grid" id="featuredGrid">
-        <article class="featured-card system active" data-cluster-card="东京地铁中断">
-          <div class="featured-head">
-            <div class="featured-code">JP</div>
-            <div class="featured-flag">🇯🇵</div>
-          </div>
-          <div>
-            <div class="featured-title">东京地铁中断</div>
-          </div>
-          <div class="featured-meta">精选 · 核心换乘站与线路之间的拥堵正在扩大。</div>
-        </article>
-        <article class="featured-card" data-cluster-card="天气变化">
-          <div class="featured-head">
-            <div class="featured-code">FI</div>
-            <div class="featured-flag">🇫🇮</div>
-          </div>
-          <div>
-            <div class="featured-title">赫尔辛基天气变化</div>
-          </div>
-          <div class="featured-meta">市中心道路与港口方向的能见度正在下降。</div>
-        </article>
-        <article class="featured-card" data-cluster-card="停电事件">
-          <div class="featured-head">
-            <div class="featured-code">AR</div>
-            <div class="featured-flag">🇦🇷</div>
-          </div>
-          <div>
-            <div class="featured-title">布宜诺斯艾利斯停电事件</div>
-          </div>
-          <div class="featured-meta">多个市中心街区仍处于停电状态，交通控制受到影响。</div>
-        </article>
-        <article class="featured-card" data-cluster-card="公共集会">
-          <div class="featured-head">
-            <div class="featured-code">FR</div>
-            <div class="featured-flag">🇫🇷</div>
-          </div>
-          <div>
-            <div class="featured-title">巴黎公共集会</div>
-          </div>
-          <div class="featured-meta">议会附近的人群正在聚集，周边道路开始变慢。</div>
-        </article>
-        <article class="featured-card" data-cluster-card="港口拥堵">
-          <div class="featured-head">
-            <div class="featured-code">SG</div>
-            <div class="featured-flag">🇸🇬</div>
-          </div>
-          <div>
-            <div class="featured-title">港口拥堵</div>
-          </div>
-          <div class="featured-meta">货运主通道出现排队，港区周边道路速度下降。</div>
-        </article>
-        <article class="featured-card" data-cluster-card="交通封控">
-          <div class="featured-head">
-            <div class="featured-code">US</div>
-            <div class="featured-flag">🇺🇸</div>
-          </div>
-          <div>
-            <div class="featured-title">交通封控</div>
-          </div>
-          <div class="featured-meta">城市核心区临时管制范围扩大，过境路线明显变慢。</div>
-        </article>
-      </div>
-      <div class="sr-counter" aria-hidden="true">
-        <span id="signalCount">04</span>
-        <span id="clusterCount">04</span>
-      </div>
+    <section class="hero">
+      <h2 id="heroStatus">
+        <span class="hero-emoji" aria-hidden="true">🌏</span>
+        <span class="hero-text">
+          <span class="hero-label">全球信号:</span><span class="hero-count">04</span>
+        </span>
+      </h2>
     </section>
 
-    <section class="section section-send">
-      <div class="section-header">
-        <h2 class="section-title">发送信号</h2>
-      </div>
-      <div class="send-grid">
-        <div class="send-box">
-          <textarea id="message" placeholder="记录你所在城市此刻正在发生的事情..."></textarea>
-          <div class="send-actions">
-            <div class="send-action-buttons">
-              <button class="primary-btn" id="submitSignal" type="button">发送信号</button>
-            </div>
-          </div>
-          <div class="send-hints-mobile">
-            <div class="hint-card">欢迎记录你所在城市的真实变化</div>
-            <div class="hint-card">可以表达个人感受，但请注意事实</div>
-            <div class="hint-card">尽量描述正在发生的事情</div>
-            <div class="hint-card">禁止违法内容 / 暴力煽动 / 仇恨言论</div>
-          </div>
-        </div>
-        <div class="send-hints">
-          <div class="hint-card">欢迎记录你所在城市的真实变化</div>
-          <div class="hint-card">可以表达个人感受，但请注意事实</div>
-          <div class="hint-card">尽量描述正在发生的事情</div>
-          <div class="hint-card">禁止违法内容 / 暴力煽动 / 仇恨言论</div>
-          <div class="hint-card">系统保留原始信号，并将相似内容聚合为更高层级事件。</div>
-          <div class="hint-card">点击任一信号可展开查看时间线、关联信号和附近地点。</div>
-          <div class="hint-card">信号由人工智能依据用户语言及地区法律整理展示，平台不进行价值引导。</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">实时流</h2>
-          <div class="section-note">实时信号流按时间倒序展示，并支持行内展开。</div>
-        </div>
-        <div class="stream-tools">
-          <div class="section-note">实时信号流 · 最新在前</div>
-          <button class="ghost-btn small" id="clearFilterBtn" type="button">清除筛选</button>
-        </div>
-      </div>
-      <div class="section-note active-filter" id="activeFilter">当前筛选：全部地区</div>
-      <div class="flow-list" id="flowList">
-        <article class="flow-item signal open" data-cluster="东京地铁中断" data-city="东京" data-country="JP">
-          <button type="button" class="signal-trigger flow-trigger" aria-expanded="true">
-            <div class="flow-top">
-              <span class="flow-flag filter-flag" data-filter-country="JP" tabindex="0" role="button">JP</span>
-              <span class="filter-city" data-filter-city="东京" tabindex="0" role="button">🇯🇵 东京</span>
-              <span>21:14 世界标准时</span>
-              <span class="tag">东京地铁中断</span>
-            </div>
-            <div class="flow-text">晚高峰设备故障后，市中心多座换乘站的地铁延误正在扩大。</div>
-          </button>
-          <div class="signal-details">
-            <div class="detail-updating">更新中 • 🇯🇵 东京</div>
-            <div class="detail-grid">
-              <div class="detail-card">
-                <h3>相关信号</h3>
-                <p>过去 18 分钟内，新宿、银座和上野出现了 3 条匹配报告。</p>
-              </div>
-              <div class="detail-card">
-                <h3>时间线</h3>
-                <p>20:56 出现拥挤报告，21:03 观测到线路中断，21:14 延误范围扩大。</p>
-              </div>
-              <div class="detail-card">
-                <h3>附近地点</h3>
-                <ul>
-                  <li>新宿站</li>
-                  <li>银座换乘通道</li>
-                  <li>上野站台入口</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+    <section class="section featured">
+      <h3 class="section-title">精选</h3>
+      <div id="featuredGrid" class="featured-grid">
+        <article class="featured-card" data-featured-card>
+          <p class="featured-time">当地时间：15:45</p>
+          <p class="featured-location">🇯🇵 日本 · 东京</p>
+          <p class="featured-event">东京地铁中断，多座换乘站延误扩大。</p>
+          <p class="featured-origin" data-collapsible>原文：🇯🇵 GS#10638291 报告：晚高峰期间，市中心多个换乘站台人流突然聚集，列车间隔拉长，部分乘客滞留在闸机区域等待疏导。</p>
+          <p class="featured-ai" data-collapsible>AI：东京地铁系统是世界上最繁忙的地铁系统之一，出现换乘节点拥堵时，延误可能通过线路耦合效应向周边区域扩散。历史同类事件中，换乘站滞留通常会在 20 至 40 分钟内传导到邻近线路，恢复过程往往慢于拥堵形成过程。</p>
         </article>
-
-        <article class="flow-item signal" data-cluster="天气变化" data-city="赫尔辛基" data-country="FI">
-          <button type="button" class="signal-trigger flow-trigger" aria-expanded="false">
-            <div class="flow-top">
-              <span class="flow-flag filter-flag" data-filter-country="FI" tabindex="0" role="button">FI</span>
-              <span class="filter-city" data-filter-city="赫尔辛基" tabindex="0" role="button">🇫🇮 赫尔辛基</span>
-              <span>20:48 世界标准时</span>
-              <span class="tag">天气变化</span>
-            </div>
-            <div class="flow-text">市中心已开始大雪，主干道路能见度正在快速下降。</div>
-          </button>
-          <div class="signal-details">
-            <div class="detail-updating">更新中 • 🇫🇮 赫尔辛基</div>
-            <div class="detail-grid">
-              <div class="detail-card">
-                <h3>相关信号</h3>
-                <p>机场走廊和有轨电车路线的观测都在说明降雪正在增强。</p>
-              </div>
-              <div class="detail-card">
-                <h3>时间线</h3>
-                <p>20:31 初雪，20:40 持续降雪，20:48 市中心能见度下降。</p>
-              </div>
-              <div class="detail-card">
-                <h3>附近地点</h3>
-                <ul>
-                  <li>卡里奥</li>
-                  <li>中央车站</li>
-                  <li>港口方向</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        <article class="featured-card" data-featured-card>
+          <p class="featured-time">当地时间：16:08</p>
+          <p class="featured-location">🇫🇮 芬兰 · 赫尔辛基</p>
+          <p class="featured-event">主干道降雪增强，港区方向能见度持续下降。</p>
+          <p class="featured-origin" data-collapsible>原文：🇫🇮 GS#20851734 反馈：主路车速明显下降，港区入口出现排队，前车灯可见距离变短，路面开始积雪。</p>
+          <p class="featured-ai" data-collapsible>AI：在低温海风条件下，港区沿线容易形成持续降雪带，短时能见度下降会优先影响道路和物流枢纽通行效率。若同时伴随侧风增强，车辆通行速度会进一步下滑，清雪与调度压力通常会在晚高峰时段明显上升。</p>
         </article>
-
-        <article class="flow-item signal" data-cluster="停电事件" data-city="布宜诺斯艾利斯" data-country="AR">
-          <button type="button" class="signal-trigger flow-trigger" aria-expanded="false">
-            <div class="flow-top">
-              <span class="flow-flag filter-flag" data-filter-country="AR" tabindex="0" role="button">AR</span>
-              <span class="filter-city" data-filter-city="布宜诺斯艾利斯" tabindex="0" role="button">🇦🇷 布宜诺斯艾利斯</span>
-              <span>20:06 世界标准时</span>
-              <span class="tag">停电事件</span>
-            </div>
-            <div class="flow-text">市中心多个街区停电，商业区附近交通信号灯失效。</div>
-          </button>
-          <div class="signal-details">
-            <div class="detail-updating">更新中 • 🇦🇷 布宜诺斯艾利斯</div>
-            <div class="detail-grid">
-              <div class="detail-card">
-                <h3>相关信号</h3>
-                <p>相邻街区的两条报告都指向更大范围的电网中断。</p>
-              </div>
-              <div class="detail-card">
-                <h3>时间线</h3>
-                <p>19:54 首次停电，20:01 商铺开始关闭，20:06 路口失去信号控制。</p>
-              </div>
-              <div class="detail-card">
-                <h3>附近地点</h3>
-                <ul>
-                  <li>微中心区</li>
-                  <li>科连特斯大道</li>
-                  <li>雷蒂罗周边</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        <article class="featured-card" data-featured-card>
+          <p class="featured-time">当地时间：14:52</p>
+          <p class="featured-location">🇦🇷 阿根廷 · 布宜诺斯艾利斯</p>
+          <p class="featured-event">城区停电扩散，多个路口交通灯暂时失效。</p>
+          <p class="featured-origin" data-collapsible>原文：🇦🇷 GS#73165028 报告：微中心区连续三段街区断电，商铺临时关闭，主干路口改为人工指挥。</p>
+          <p class="featured-ai" data-collapsible>AI：城市核心区停电事件若覆盖交通控制节点，通常会先表现为路口拥堵，再逐步影响公共服务与商业活动节奏。电网恢复前，人工指挥与临时绕行会提高道路不确定性，局部拥堵常出现反复峰值。</p>
         </article>
-
-        <article class="flow-item signal" data-cluster="公共集会" data-city="巴黎" data-country="FR">
-          <button type="button" class="signal-trigger flow-trigger" aria-expanded="false">
-            <div class="flow-top">
-              <span class="flow-flag filter-flag" data-filter-country="FR" tabindex="0" role="button">FR</span>
-              <span class="filter-city" data-filter-city="巴黎" tabindex="0" role="button">🇫🇷 巴黎</span>
-              <span>19:42 世界标准时</span>
-              <span class="tag">公共集会</span>
-            </div>
-            <div class="flow-text">议会附近人群正在增加，周边街道通行开始放缓。</div>
-          </button>
-          <div class="signal-details">
-            <div class="detail-updating">更新中 • 🇫🇷 巴黎</div>
-            <div class="detail-grid">
-              <div class="detail-card">
-                <h3>相关信号</h3>
-                <p>三条观测都指向人群正从附近大道向集会区域移动。</p>
-              </div>
-              <div class="detail-card">
-                <h3>时间线</h3>
-                <p>19:18 看到标语，19:30 人群密度上升，19:42 街道通行开始变慢。</p>
-              </div>
-              <div class="detail-card">
-                <h3>附近地点</h3>
-                <ul>
-                  <li>议会周边区域</li>
-                  <li>左岸通行路口</li>
-                  <li>交通检查点</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        <article class="featured-card" data-featured-card>
+          <p class="featured-time">当地时间：17:03</p>
+          <p class="featured-location">🇫🇷 法国 · 巴黎</p>
+          <p class="featured-event">公共集会升温，核心街区通行速度变慢。</p>
+          <p class="featured-origin" data-collapsible>原文：🇫🇷 GS#90437615 记录：议会周边出现持续人流汇聚，部分路段已设置临时分流，车辆平均通行时间上升。</p>
+          <p class="featured-ai" data-collapsible>AI：公共集会在核心街区发生时，交通影响通常先出现在边界道路，随后向外围连接路网扩散。若现场持续时间超过预期，分流策略需要动态调整，否则外围道路会出现延后性拥堵波峰。</p>
+        </article>
+        <article class="featured-card" data-featured-card>
+          <p class="featured-time">当地时间：19:20</p>
+          <p class="featured-location">🇸🇬 新加坡 · 港区</p>
+          <p class="featured-event">港口拥堵上升，货运通道排队时间继续拉长。</p>
+          <p class="featured-origin" data-collapsible>原文：🇸🇬 GS#48591023 反馈：堆场周边等待车辆增加，装卸节奏变慢，主入口通行周期比平时更长。</p>
+          <p class="featured-ai" data-collapsible>AI：港区拥堵常与装卸节奏、闸口吞吐和道路协同有关，短时波动会放大到城市物流链条。若车辆等候时间持续拉长，仓储与配送计划会被迫重排，次日早间通行压力也可能被同步抬高。</p>
+        </article>
+        <article class="featured-card" data-featured-card>
+          <p class="featured-time">当地时间：11:37</p>
+          <p class="featured-location">🇺🇸 美国 · 芝加哥</p>
+          <p class="featured-event">高架封控临时扩大，跨区通勤出现连续延迟。</p>
+          <p class="featured-origin" data-collapsible>原文：🇺🇸 GS#66219470 报告：高架入口临时关闭后，替代路线车流叠加，多个匝道出现长队。</p>
+          <p class="featured-ai" data-collapsible>AI：高架封控会快速改变城市通勤流向，替代路线负载上升后，拥堵往往表现为分段式持续延迟。若匝道与地面路网衔接点缺乏缓冲，拥堵将呈现“短时缓解后再次抬升”的循环特征。</p>
         </article>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">信号池</h2>
-          <div class="section-note">统一展示系统指标、城市活跃度与抽取式查看入口。</div>
+    <section class="section submit">
+      <h3 class="section-title">发送信号</h3>
+      <div class="submit-layout">
+        <div class="submit-left">
+          <textarea id="message" placeholder="记录你所在城市此刻正在发生的事情…"></textarea>
+          <button id="submitSignal" type="button" class="submit-btn">发送信号</button>
         </div>
-        <div class="section-note">结构化界面总览</div>
-      </div>
-
-      <div class="pool-layout">
-        <div class="pool-side">
-          <h4>系统指标</h4>
-          <div class="pool-metrics">
-            <div class="metric">
-              <div class="metric-label">可见信号</div>
-              <div class="metric-value" id="panelSignalCount">04</div>
-            </div>
-            <div class="metric">
-              <div class="metric-label">活跃事件簇</div>
-              <div class="metric-value" id="panelClusterCount">04</div>
-            </div>
-          </div>
-          <button class="draw-btn ai" id="drawAiBtn" type="button">查看精选信号</button>
-        </div>
-
-        <div class="pool-center">
-          <h4>信号展示区</h4>
-          <div class="signal-display">
-            <div class="signal-card" id="signalCard">
-              <div>
-                <div class="signal-status">精选</div>
-                <div class="signal-title">🇯🇵 东京地铁中断</div>
-                <div class="signal-body">简短现场报告会即时进入信号流，并保留为可追溯证据，后续可归并为更高层级事件。</div>
-              </div>
-              <div class="signal-bottom">
-                <span class="tag">🇯🇵 东京 · 日本</span>
-                <span class="signal-mini">当前本地原型已启用行内展开与事件聚合能力。</span>
-              </div>
-            </div>
-            <div class="pool-actions">
-              <button class="draw-btn" id="drawWorldBtn" type="button">抽取世界信号</button>
-              <button class="ghost-btn" id="openReadBtn" type="button">查看已读信号</button>
-            </div>
-          </div>
-          <div class="footer-note">当前页面为本地原型，用于验证结构、交互和信息密度。</div>
-        </div>
-
-        <div class="pool-side">
-          <h4>活跃城市</h4>
-          <div class="city-list large" id="cityList">
-            <span>🇯🇵 东京</span>
-            <span>🇫🇮 赫尔辛基</span>
-            <span>🇦🇷 布宜诺斯艾利斯</span>
-            <span>🇫🇷 巴黎</span>
-          </div>
-          <div class="pool-metrics compact">
-            <div class="metric">
-              <div class="metric-label">运行模式</div>
-              <div class="metric-value small">终端模式</div>
-            </div>
-          </div>
-          <div class="triangle-note">无需账号、文本优先、无刷新交互，仍是当前原型的核心规则。</div>
+        <div class="submit-rules">
+          <p>△ 欢迎记录你所在城市的真实变化</p>
+          <p>△ 可以表达个人感受，但请注意事实</p>
+          <p>△ 尽量描述正在发生的事情</p>
+          <p>△ 禁止违法内容 / 暴力煽动 / 仇恨言论</p>
+          <p>△ 系统保留原始信号，并将相似内容聚合为更高层级事件</p>
+          <p>△ 点击任一信号可展开查看时间线、关联信号和附近地点</p>
         </div>
       </div>
     </section>
-  </div>
 
-  <div class="modal-mask" id="modalMask">
-    <div class="modal">
-      <div class="modal-top">
-        <div>
-          <h3 class="modal-title" id="modalTitle">信号详情</h3>
-          <div class="muted" id="modalMeta">事件簇详情</div>
+    <section class="section live-feed">
+      <h3 class="section-title">实时流</h3>
+      <div id="flowList" class="live-list"></div>
+    </section>
+
+    <section class="section signal-pool">
+      <h3 class="section-title">信号池</h3>
+      <div class="pool-panel">
+        <div class="pool-head">
+          <div class="pool-count" id="poolCount">可见信号 04</div>
+          <div class="pool-note">△ 底部汇聚面板：高密度原始信号集合</div>
         </div>
-        <button class="close-btn" id="closeModalBtn" type="button">关闭</button>
+        <div id="poolGrid" class="pool-grid"></div>
       </div>
-
-      <div class="modal-block">
-        <h5>原始信号</h5>
-        <p id="modalOriginal"></p>
-      </div>
-
-      <div class="modal-block">
-        <h5>系统摘要</h5>
-        <p id="modalAi"></p>
-      </div>
-
-      <div class="modal-block">
-        <h5>补充说明</h5>
-        <p id="modalMore"></p>
-      </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
