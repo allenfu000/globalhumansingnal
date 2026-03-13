@@ -19,6 +19,14 @@ function getErrorMessage(data, fallbackMessage) {
   );
 }
 
+function toResponseText(data) {
+  return (
+    data?.output_text ||
+    data?.output?.[0]?.content?.[0]?.text ||
+    ""
+  );
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
@@ -122,10 +130,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    const text =
-      data?.output_text ||
-      data?.output?.[0]?.content?.[0]?.text ||
-      "";
+    const text = toResponseText(data);
 
     return jsonResponse({
       ok: true,

@@ -20,7 +20,6 @@
     .panel {
       max-width: 860px;
       width: min(860px, 100%);
-      margin: 0;
       padding: 28px;
       background: #242424;
       border: 1px solid #333;
@@ -30,7 +29,7 @@
 
     h1 {
       font-size: 34px;
-      margin-bottom: 20px;
+      margin: 0 0 8px;
     }
 
     textarea {
@@ -44,6 +43,7 @@
       color: #f3f3f3;
       border: 1px solid #444;
       border-radius: 8px;
+      resize: vertical;
     }
 
     button {
@@ -56,6 +56,12 @@
       border-radius: 8px;
     }
 
+    .status {
+      margin-top: 12px;
+      color: #c0c0c0;
+      font-size: 18px;
+    }
+
     .output {
       margin-top: 24px;
       padding: 16px;
@@ -66,23 +72,16 @@
       font-size: 20px;
       border-radius: 8px;
     }
-
-    .status {
-      margin-top: 12px;
-      color: #c0c0c0;
-      font-size: 18px;
-    }
   </style>
 </head>
 <body>
   <div class="panel">
-  <h1>全球信号智能控制台</h1>
+    <h1>全球信号智能控制台</h1>
+    <textarea id="message" placeholder="在这里输入你想发送的内容..."></textarea>
+    <button id="sendBtn" type="button">发送</button>
 
-  <textarea id="message" placeholder="在这里输入你想发送的内容..."></textarea>
-  <button id="sendBtn">发送</button>
-
-  <div class="status" id="status"></div>
-  <div class="output" id="output">回复会显示在这里</div>
+    <div class="status" id="status"></div>
+    <div class="output" id="output">回复会显示在这里</div>
   </div>
 
   <script>
@@ -100,7 +99,6 @@
 
     sendBtn.addEventListener("click", async () => {
       const message = messageInput.value.trim();
-
       if (!message) {
         status.textContent = "请先输入内容";
         return;
@@ -119,6 +117,9 @@
         });
 
         const data = await response.json();
+        if (!response.ok || data?.ok === false) {
+          throw new Error(data?.message || "请求失败");
+        }
 
         const reply =
           data?.text ||
