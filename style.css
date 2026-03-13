@@ -220,6 +220,11 @@ textarea {
   overflow: hidden;
   border-radius: 50%;
   position: relative;
+  background: radial-gradient(circle at 36% 24%, rgba(159, 250, 255, 0.2) 0%, rgba(16, 67, 99, 0.25) 45%, rgba(4, 17, 32, 0.75) 100%);
+  box-shadow:
+    0 0 16px rgba(63, 216, 170, 0.3),
+    0 0 36px rgba(38, 192, 255, 0.24),
+    inset 0 0 18px rgba(164, 252, 226, 0.14);
 }
 
 .hero-emoji::after {
@@ -236,16 +241,28 @@ textarea {
   z-index: 2;
 }
 
-.hero-globe-img {
+.hero-globe-canvas,
+.hero-globe-fallback {
   width: 100%;
   height: 100%;
   display: block;
+  border-radius: 50%;
+}
+
+.hero-globe-canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-globe-fallback {
   object-fit: cover;
   object-position: 60% 46%;
   transform: scale(2.45);
   transform-origin: center center;
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.38;
 }
 
 .hero-text {
@@ -927,7 +944,7 @@ textarea {
     transform: none;
   }
 
-  .hero-globe-img {
+  .hero-globe-fallback {
     object-position: 60% 46%;
     transform: scale(2.55);
   }

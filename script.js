@@ -8,6 +8,298 @@ const submitButton = document.getElementById("submitSignal");
 const featuredCards = document.querySelectorAll("[data-featured-card]");
 const accountEntry = document.querySelector("[data-account-entry]");
 
+function initHeroGlobe() {
+  const canvas = document.getElementById("heroGlobeCanvas");
+  const fallback = document.querySelector(".hero-globe-fallback");
+  if (!canvas) {
+    return;
+  }
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return;
+  }
+
+  const deg = (v) => (v * Math.PI) / 180;
+  const wrapLon = (lon) => ((lon + 540) % 360) - 180;
+  const noise2 = (a, b) => {
+    const n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453123;
+    return n - Math.floor(n);
+  };
+
+  const landMasks = [
+    { lat: 46, lon: -106, ry: 30, rx: 34 }, // North America
+    { lat: 16, lon: -92, ry: 14, rx: 10 }, // Central America
+    { lat: -16, lon: -60, ry: 30, rx: 18 }, // South America
+    { lat: 54, lon: 70, ry: 32, rx: 78 }, // Eurasia
+    { lat: 8, lon: 22, ry: 29, rx: 22 }, // Africa
+    { lat: -25, lon: 134, ry: 13, rx: 16 }, // Australia
+    { lat: 72, lon: -42, ry: 10, rx: 12 }, // Greenland
+    { lat: -76, lon: 25, ry: 8, rx: 130 } // Antarctica
+  ];
+
+  const isInMask = (lat, lon, mask) => {
+    const dLat = (lat - mask.lat) / mask.ry;
+    const dLon = wrapLon(lon - mask.lon) / mask.rx;
+    const irregular = 0.82 + noise2(lat * 0.13, lon * 0.09) * 0.35;
+    return dLat * dLat + dLon * dLon < irregular;
+  };
+
+  const landPoints = [];
+  for (let lat = -84; lat <= 84; lat += 2) {
+    for (let lon = -180; lon < 180; lon += 2) {
+      let hit = false;
+      for (let i = 0; i < landMasks.length; i += 1) {
+        if (isInMask(lat, lon, landMasks[i])) {
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) {
+        continue;
+      }
+      const tone = 0.65 + noise2(lat * 0.5, lon * 0.5) * 0.35;
+      landPoints.push({ lat, lon, tone });
+    }
+  }
+
+  const cloudPoints = [];
+  for (let lat = -80; lat <= 80; lat += 3) {
+    for (let lon = -180; lon < 180; lon += 3) {
+      const cluster = noise2(lat * 0.12, lon * 0.12);
+      const detail = noise2(lat * 0.47 + 2.17, lon * 0.33 + 5.91);
+      const density = cluster * 0.7 + detail * 0.3;
+      if (density < 0.73) {
+        continue;
+      }
+      cloudPoints.push({
+        lat,
+        lon,
+        alpha: 0.08 + (density - 0.73) * 0.32
+      });
+    }
+  }
+
+  let cssSize = 112;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let radius = 50;
+
+  const resize = () => {
+    cssSize = Math.max(54, Math.round(canvas.clientWidth || 112));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(cssSize * dpr);
+    canvas.height = Math.round(cssSize * dpr);
+    radius = cssSize * 0.46;
+  };
+  resize();
+
+  if (fallback) {
+    fallback.style.opacity = "0.08";
+  }
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const spinSpeed = reduceMotion ? 0.000225 : 0.00036;
+  const cloudSpeed = spinSpeed * 1.25;
+  const tilt = deg(23);
+  const start = performance.now();
+
+  const project = (latDeg, lonDeg, rotY) => {
+    const lat = deg(latDeg);
+    const lon = deg(lonDeg);
+    const clat = Math.cos(lat);
+    let x = clat * Math.cos(lon);
+    let y = Math.sin(lat);
+    let z = clat * Math.sin(lon);
+
+    const cy = Math.cos(rotY);
+    const sy = Math.sin(rotY);
+    const x1 = x * cy - z * sy;
+    const z1 = x * sy + z * cy;
+
+    const cx = Math.cos(tilt);
+    const sx = Math.sin(tilt);
+    const y2 = y * cx - z1 * sx;
+    const z2 = y * sx + z1 * cx;
+
+    x = x1;
+    y = y2;
+    z = z2;
+
+    const perspective = 0.82 + (z + 1) * 0.28;
+    return {
+      x,
+      y,
+      z,
+      visible: z > 0,
+      sx: cssSize * 0.5 + x * radius * perspective,
+      sy: cssSize * 0.5 - y * radius * perspective,
+      scale: perspective
+    };
+  };
+
+  const drawGrid = (rotY) => {
+    ctx.strokeStyle = "rgba(165, 236, 245, 0.17)";
+    ctx.lineWidth = Math.max(0.8, cssSize * 0.006);
+    for (let lon = -180; lon < 180; lon += 20) {
+      let drawing = false;
+      for (let lat = -90; lat <= 90; lat += 3) {
+        const p = project(lat, lon, rotY);
+        if (!p.visible) {
+          drawing = false;
+          continue;
+        }
+        if (!drawing) {
+          ctx.beginPath();
+          ctx.moveTo(p.sx, p.sy);
+          drawing = true;
+        } else {
+          ctx.lineTo(p.sx, p.sy);
+        }
+      }
+      if (drawing) {
+        ctx.stroke();
+      }
+    }
+    for (let lat = -70; lat <= 70; lat += 20) {
+      let drawing = false;
+      for (let lon = -180; lon <= 180; lon += 3) {
+        const p = project(lat, lon, rotY);
+        if (!p.visible) {
+          drawing = false;
+          continue;
+        }
+        if (!drawing) {
+          ctx.beginPath();
+          ctx.moveTo(p.sx, p.sy);
+          drawing = true;
+        } else {
+          ctx.lineTo(p.sx, p.sy);
+        }
+      }
+      if (drawing) {
+        ctx.stroke();
+      }
+    }
+  };
+
+  const render = () => {
+    const now = performance.now();
+    const t = now - start;
+    const rotY = t * spinSpeed;
+    const cloudRotY = t * cloudSpeed;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssSize, cssSize);
+
+    const glow = ctx.createRadialGradient(
+      cssSize * 0.5,
+      cssSize * 0.5,
+      radius * 0.62,
+      cssSize * 0.5,
+      cssSize * 0.5,
+      radius * 1.45
+    );
+    glow.addColorStop(0, "rgba(75, 241, 198, 0.18)");
+    glow.addColorStop(0.6, "rgba(46, 205, 255, 0.14)");
+    glow.addColorStop(1, "rgba(46, 205, 255, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cssSize * 0.5, cssSize * 0.5, radius * 1.45, 0, Math.PI * 2);
+    ctx.fill();
+
+    const ocean = ctx.createRadialGradient(
+      cssSize * 0.36,
+      cssSize * 0.28,
+      radius * 0.1,
+      cssSize * 0.5,
+      cssSize * 0.5,
+      radius
+    );
+    ocean.addColorStop(0, "#2ec5e8");
+    ocean.addColorStop(0.48, "#1a7ea7");
+    ocean.addColorStop(1, "#083854");
+    ctx.fillStyle = ocean;
+    ctx.beginPath();
+    ctx.arc(cssSize * 0.5, cssSize * 0.5, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cssSize * 0.5, cssSize * 0.5, radius, 0, Math.PI * 2);
+    ctx.clip();
+
+    drawGrid(rotY);
+
+    for (let i = 0; i < landPoints.length; i += 1) {
+      const p = landPoints[i];
+      const q = project(p.lat, p.lon, rotY);
+      if (!q.visible) {
+        continue;
+      }
+      const px = Math.max(0.7, cssSize * 0.012 * q.scale);
+      const green = Math.round(188 + p.tone * 56);
+      const blue = Math.round(118 + p.tone * 36);
+      ctx.fillStyle = `rgb(72,${green},${blue})`;
+      ctx.fillRect(q.sx - px * 0.5, q.sy - px * 0.5, px, px);
+    }
+
+    for (let i = 0; i < cloudPoints.length; i += 1) {
+      const c = cloudPoints[i];
+      const q = project(c.lat, c.lon, cloudRotY);
+      if (!q.visible) {
+        continue;
+      }
+      const pr = Math.max(0.5, cssSize * 0.009 * q.scale);
+      ctx.fillStyle = `rgba(235,248,255,${Math.min(0.34, c.alpha * q.scale).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(q.sx, q.sy, pr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const light = ctx.createRadialGradient(
+      cssSize * 0.31,
+      cssSize * 0.24,
+      radius * 0.08,
+      cssSize * 0.5,
+      cssSize * 0.5,
+      radius * 1.1
+    );
+    light.addColorStop(0, "rgba(255,255,255,0.24)");
+    light.addColorStop(0.45, "rgba(255,255,255,0.09)");
+    light.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = light;
+    ctx.beginPath();
+    ctx.arc(cssSize * 0.5, cssSize * 0.5, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    const shade = ctx.createLinearGradient(
+      cssSize * 0.2,
+      cssSize * 0.2,
+      cssSize * 0.85,
+      cssSize * 0.85
+    );
+    shade.addColorStop(0, "rgba(0,0,0,0)");
+    shade.addColorStop(0.62, "rgba(0,0,0,0.1)");
+    shade.addColorStop(1, "rgba(0,0,0,0.24)");
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.arc(cssSize * 0.5, cssSize * 0.5, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+    requestAnimationFrame(render);
+  };
+  render();
+
+  if ("ResizeObserver" in window) {
+    const observer = new ResizeObserver(() => {
+      resize();
+    });
+    observer.observe(canvas);
+  } else {
+    window.addEventListener("resize", resize);
+  }
+}
+
 const COUNTRY_CODE_TO_FLAG = {
   AR: "🇦🇷",
   AU: "🇦🇺",
@@ -1033,4 +1325,5 @@ applyFeaturedCompactPreview();
 bindFeaturedCards();
 bindAccountEntry();
 applyFlagRendering(document);
+initHeroGlobe();
 setInterval(updateClock, 1000);

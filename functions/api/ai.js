@@ -1,3 +1,5 @@
+import { insertSupabaseMessage } from "../lib/storage-supabase.js";
+
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
   "Cache-Control": "no-store"
@@ -25,6 +27,14 @@ function toResponseText(data) {
     data?.output?.[0]?.content?.[0]?.text ||
     ""
   );
+}
+
+function resolveSessionId(body) {
+  const fromBody = typeof body?.session_id === "string" ? body.session_id.trim() : "";
+  if (fromBody) {
+    return fromBody;
+  }
+  return `gs_web_${Date.now()}`;
 }
 
 export async function onRequestOptions() {
@@ -66,6 +76,7 @@ export async function onRequestPost(context) {
   }
 
   const message = typeof body?.message === "string" ? body.message.trim() : "";
+  const sessionId = resolveSessionId(body);
   if (!message) {
     return jsonResponse(
       {
@@ -132,8 +143,23 @@ export async function onRequestPost(context) {
 
     const text = toResponseText(data);
 
+    // Write-through to Supabase (non-blocking for chat success).
+    await insertSupabaseMessage(env, {
+      session_id: sessionId,
+      role: "user",
+      content: message,
+      ts: Date.now()
+    }).catch(() => null);
+    await insertSupabaseMessage(env, {
+      session_id: sessionId,
+      role: "assistant",
+      content: text || "",
+      ts: Date.now()
+    }).catch(() => null);
+
     return jsonResponse({
       ok: true,
+      session_id: sessionId,
       text,
       data
     });

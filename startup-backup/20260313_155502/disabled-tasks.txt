@@ -1,0 +1,11 @@
+﻿\MicrosoftEdgeUpdateTaskMachineCore
+\OneDrive Startup Task-S-1-5-21-3412763240-3340357122-149382279-1001
+\人行征信安全控件安全输入程序
+\ASUS\AcPowerNotification
+\ASUS\ArmourySocketServer
+\ASUS\ASUSUpdateTaskMachineCore
+\ASUS\ledcontrolservice3_sdk
+\ASUS\NoiseCancelingEngine
+\ASUS\P508PowerAgent_sdk
+\DouyinUser\DouyinGuard\LaunchDouyinGuard
+\GoogleSystem\GoogleUpdater\GoogleUpdaterTaskSystem147.0.7703.0{3866C1AA-71B9-4F9E-97B5-9281C6D04C7E}
