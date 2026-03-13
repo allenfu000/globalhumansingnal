@@ -46,6 +46,10 @@ export async function insertSupabaseMessage(env, row) {
     role: String(row?.role || ""),
     content: String(row?.content || ""),
     source: "gs-control",
+    message_type: String(row?.message_type || "normal_text"),
+    mode: String(row?.mode || "normal"),
+    attachments: Array.isArray(row?.attachments) ? row.attachments : [],
+    meta: row?.meta && typeof row.meta === "object" ? row.meta : {},
     created_at: new Date(Number(row?.ts || Date.now())).toISOString()
   };
 
@@ -68,6 +72,81 @@ export async function insertSupabaseMessage(env, row) {
     status: result.status,
     error: result.ok ? "" : (result.data?.message || "insert_failed")
   };
+}
+
+export async function insertSupabaseTask(env, row) {
+  if (!isSupabaseReady(env)) {
+    return { ok: false, skipped: true, reason: "supabase_not_configured" };
+  }
+  const { url, key } = getSupabaseConfig(env);
+  const table = String(env?.SUPABASE_TASKS_TABLE || "gs_control_tasks").trim();
+
+  const payload = {
+    session_id: String(row?.session_id || ""),
+    title: String(row?.title || "未命名任务"),
+    status: String(row?.status || "pending"),
+    task_content: String(row?.task_content || ""),
+    source: String(row?.source || "gs-control"),
+    created_at: new Date(Number(row?.ts || Date.now())).toISOString(),
+    updated_at: new Date(Number(row?.ts || Date.now())).toISOString()
+  };
+
+  if (!payload.session_id || !payload.task_content) {
+    return { ok: false, skipped: true, reason: "invalid_task_row" };
+  }
+
+  const endpoint = `${url}/rest/v1/${encodeURIComponent(table)}`;
+  const result = await safeFetchJson(endpoint, {
+    method: "POST",
+    headers: {
+      ...createHeaders(key),
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  return {
+    ok: result.ok,
+    status: result.status,
+    error: result.ok ? "" : (result.data?.message || "insert_task_failed")
+  };
+}
+
+export async function fetchRecentSupabaseTasks(env, sessionId, limit = 30) {
+  if (!isSupabaseReady(env)) {
+    return [];
+  }
+  const sid = String(sessionId || "").trim();
+  if (!sid) {
+    return [];
+  }
+
+  const { url, key } = getSupabaseConfig(env);
+  const table = String(env?.SUPABASE_TASKS_TABLE || "gs_control_tasks").trim();
+  const endpoint = new URL(`${url}/rest/v1/${encodeURIComponent(table)}`);
+  endpoint.searchParams.set("select", "id,session_id,title,status,task_content,created_at,updated_at");
+  endpoint.searchParams.set("session_id", `eq.${sid}`);
+  endpoint.searchParams.set("order", "created_at.desc");
+  endpoint.searchParams.set("limit", String(Math.max(1, Math.min(limit, 80))));
+
+  const result = await safeFetchJson(endpoint.toString(), {
+    method: "GET",
+    headers: createHeaders(key)
+  });
+
+  if (!result.ok || !Array.isArray(result.data)) {
+    return [];
+  }
+
+  return result.data.map((item) => ({
+    id: String(item?.id || ""),
+    session_id: String(item?.session_id || ""),
+    title: String(item?.title || "开发任务"),
+    status: String(item?.status || "pending"),
+    task_content: String(item?.task_content || ""),
+    created_at: String(item?.created_at || ""),
+    updated_at: String(item?.updated_at || "")
+  }));
 }
 
 export async function fetchRecentSupabaseMessages(env, sessionId, limit = 16) {

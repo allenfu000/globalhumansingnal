@@ -2,179 +2,1686 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>全球信号智能控制台</title>
   <style>
+    :root {
+      --bg: #101113;
+      --panel: #1a1c20;
+      --panel-soft: #15171b;
+      --border: #4a505c;
+      --text: #f3f5f8;
+      --muted: #a6adbb;
+      --accent: #4f8cff;
+      --danger: #d45a5a;
+      --ok: #32b87b;
+      --warn: #c89b3c;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
       min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top, #14171d 0%, var(--bg) 52%);
+      color: var(--text);
       padding: 24px;
-      background: #1a1a1a;
-      color: #f3f3f3;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
     }
 
-    .panel {
-      max-width: 860px;
-      width: min(860px, 100%);
-      padding: 28px;
-      background: #242424;
-      border: 1px solid #333;
-      border-radius: 14px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    .app {
+      width: min(1950px, calc(100vw - 48px));
+      margin: 0;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
     }
 
-    h1 {
-      font-size: 34px;
-      margin: 0 0 8px;
+    .header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #171920;
+    }
+
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .mode-switch {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      background: #0f1115;
+    }
+
+    .mode-btn {
+      border: none;
+      color: var(--muted);
+      background: transparent;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 9px;
+      font-size: 12px;
+      color: var(--muted);
+      background: #111319;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #666;
+    }
+
+    .chip-ok .chip-dot { background: var(--ok); }
+    .chip-warn .chip-dot { background: var(--warn); }
+    .chip-bad .chip-dot { background: var(--danger); }
+
+    .wechat-tip {
+      margin-top: 10px;
+      border: 1px solid #36517a;
+      background: #142133;
+      color: #b9d5ff;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 0;
+      min-height: 520px;
+    }
+
+    .left, .right {
+      padding: 14px;
+    }
+
+    .left {
+      border-right: 1px solid var(--border);
+      background: var(--panel-soft);
+    }
+
+    .section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #111318;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 23px;
+      color: #dbe4f2;
+      font-weight: 500;
+      letter-spacing: 0.2px;
     }
 
     textarea {
       width: 100%;
-      height: 140px;
-      padding: 14px;
-      font-size: 20px;
-      box-sizing: border-box;
-      margin-bottom: 12px;
-      background: #0d0d0d;
-      color: #f3f3f3;
-      border: 1px solid #444;
-      border-radius: 8px;
+      min-height: 120px;
+      border: 1px solid #9ca3af;
+      border-radius: 10px;
+      background: #eceff4;
+      color: #1f2937;
+      padding: 10px;
       resize: vertical;
+      font-size: 15px;
+      line-height: 1.45;
     }
 
-    button {
-      padding: 12px 20px;
-      font-size: 18px;
+    textarea::placeholder,
+    input::placeholder {
+      color: #778193;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      justify-content: flex-end;
+    }
+
+    button, .file-btn {
+      border: 1px solid #5b6372;
+      border-radius: 10px;
+      background: #151924;
+      color: #e7ecf6;
+      padding: 8px 12px;
       cursor: pointer;
-      background: #111;
+      font-size: 14px;
+      min-height: 38px;
+    }
+
+    button.primary {
+      background: #2b63c7;
+      border-color: #2b63c7;
       color: #fff;
-      border: 1px solid #444;
+    }
+
+    button.danger {
+      background: #3a1c1f;
+      border-color: #5b262b;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .file-btn input {
+      display: none;
+    }
+
+    .inline-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .preview-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .thumb {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0a0b0f;
+      aspect-ratio: 1 / 1;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .thumb button {
+      position: absolute;
+      right: 4px;
+      top: 4px;
       border-radius: 8px;
+      padding: 4px 6px;
+      min-height: 20px;
+      font-size: 11px;
+      background: rgba(0, 0, 0, 0.7);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
     .status {
-      margin-top: 12px;
-      color: #c0c0c0;
-      font-size: 18px;
+      margin-top: 8px;
+      color: var(--muted);
+      min-height: 18px;
+      font-size: 13px;
     }
 
-    .output {
-      margin-top: 24px;
-      padding: 16px;
-      background: #0d0d0d;
-      border: 1px solid #444;
+    .voice-state {
+      margin-top: 8px;
+      color: #9eb8ff;
+      font-size: 13px;
+    }
+
+    .output-box {
+      border: 1px solid #5d6676;
+      border-radius: var(--radius);
+      background: #101217;
+      padding: 12px;
       min-height: 120px;
       white-space: pre-wrap;
-      font-size: 20px;
-      border-radius: 8px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+      font-size: 14px;
     }
 
-    .debug-block {
-      margin-top: 16px;
-      padding: 12px 16px;
-      background: #1a2a1a;
-      border: 1px solid #2a4a2a;
-      border-radius: 8px;
-      font-size: 14px;
-      color: #b0b0b0;
-      white-space: pre-wrap;
+    .output-actions {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
     }
-    .debug-block strong { color: #e0e0e0; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .dev-only {
+      display: none;
+    }
+
+    body.mode-dev .dev-only {
+      display: block;
+    }
+
+    .dev-panel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dev-subtitle {
+      color: #aab4c5;
+      font-size: 14px;
+      margin-top: 2px;
+      margin-bottom: -2px;
+    }
+
+    .task-primary-actions {
+      margin-top: 10px;
+    }
+
+    .refine-wrap {
+      border: 1px solid #485062;
+      background: #121722;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 2px;
+    }
+
+    .task-refine-actions {
+      margin-top: 6px;
+      gap: 6px;
+    }
+
+    .task-refine-actions button {
+      font-size: 14px;
+      min-height: 36px;
+      padding: 6px 10px;
+      border-color: #667089;
+      background: #1a2030;
+    }
+
+    body.mode-dev .normal-only {
+      display: none;
+    }
+
+    details {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #0f1218;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      user-select: none;
+      font-size: 21px;
+      font-weight: 500;
+      color: #dbe4f2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .details-body {
+      padding: 10px 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      opacity: 1;
+    }
+
+    .fold-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #9ca5b8;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .fold-arrow {
+      display: inline-block;
+      transition: transform 0.35s ease;
+    }
+
+    .fold-open {
+      display: inline;
+    }
+
+    .fold-close {
+      display: none;
+    }
+
+    details[open] > summary .fold-arrow {
+      transform: rotate(90deg);
+    }
+
+    details[open] > summary .fold-open {
+      display: none;
+    }
+
+    details[open] > summary .fold-close {
+      display: inline;
+    }
+
+    .task-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0f1218;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    .task-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .task-title {
+      width: 100%;
+      border: 1px solid #9ca3af;
+      border-radius: 8px;
+      background: #eceff4;
+      color: #1f2937;
+      padding: 6px 8px;
+      margin-bottom: 8px;
+    }
+
+    .task-content {
+      width: 100%;
+      min-height: 90px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      border: 1px solid #9ca3af;
+      background: #eceff4;
+      color: #1f2937;
+    }
+
+    .input-shell {
+      position: relative;
+    }
+
+    .input-shell > textarea,
+    .input-shell > input {
+      padding-right: 64px;
+    }
+
+    .input-tag {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: #d1d5db;
+      color: #6b7280;
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 2px 8px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .input-shell.is-empty .input-tag {
+      opacity: 1;
+    }
+
+    .task-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 8px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        display: block;
+      }
+      .main {
+        grid-template-columns: 1fr;
+      }
+      .left {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .title {
+        font-size: 19px;
+      }
+      textarea {
+        min-height: 108px;
+      }
+      button, .file-btn {
+        min-height: 42px;
+      }
+      .right details {
+        margin-bottom: 10px;
+      }
+      .task-refine-actions {
+        justify-content: flex-start;
+      }
+      .task-refine-actions button {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .header {
+        padding: 22px 25px;
+      }
+      .title {
+        font-size: 35px;
+      }
+      .section-title {
+        font-size: 19px;
+      }
+      textarea {
+        font-size: 20px;
+      }
+      .output-box {
+        font-size: 19px;
+      }
+      button, .file-btn {
+        font-size: 19px;
+        min-height: 48px;
+      }
+      .main {
+        min-height: 775px;
+      }
+      .section {
+        padding: 15px;
+      }
+      .status,
+      .voice-state,
+      .muted,
+      .inline-note,
+      .chip {
+        font-size: 15px;
+      }
+    }
+
   </style>
 </head>
-<body>
-  <div class="panel">
-    <h1>全球信号智能控制台</h1>
-    <textarea id="message" placeholder="在这里输入你想发送的内容..."></textarea>
-    <button id="sendBtn" type="button">发送</button>
+<body class="mode-normal">
+  <div class="app">
+    <header class="header">
+      <div class="header-top">
+        <h1 class="title">全球信号智能控制台</h1>
+        <div class="mode-switch" id="modeSwitch">
+          <button class="mode-btn active" data-mode="normal" type="button">普通模式</button>
+          <button class="mode-btn" data-mode="dev" type="button">开发模式 / Cursor模式</button>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chipSession">会话：-</span>
+        <span class="chip chip-warn" id="chipOpenAI"><span class="chip-dot"></span>OpenAI：未知</span>
+        <span class="chip chip-warn" id="chipSupabase"><span class="chip-dot"></span>Supabase：未知</span>
+        <span class="chip chip-warn" id="chipUpload"><span class="chip-dot"></span>图片：0 张</span>
+        <span class="chip chip-warn" id="chipDebug"><span class="chip-dot"></span>调试：关闭</span>
+      </div>
+      <div class="wechat-tip" id="wechatTip" style="display:none;">当前为微信内置浏览器，已启用兼容模式。</div>
+    </header>
 
-    <div class="status" id="status"></div>
-    <div class="output" id="output">回复会显示在这里</div>
-    <div class="debug-block" id="debugBlock" style="display: none;"></div>
+    <main class="main">
+      <section class="left">
+        <div class="section">
+          <h3 class="section-title">输入区</h3>
+          <div class="input-shell is-empty">
+            <textarea id="messageInput" placeholder="输入你的需求、问题或开发想法（支持 Shift+Enter 换行）"></textarea>
+            <span class="input-tag">输入</span>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="sendBtn">发送</button>
+            <button type="button" id="clearInputBtn">清空输入</button>
+            <button type="button" id="clearDraftBtn">清空草稿</button>
+          </div>
+          <div class="status" id="statusText"></div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">图片附件（最多 10 张）</h3>
+          <div class="btn-row">
+            <label class="file-btn" for="imageInput">
+              选择图片
+              <input id="imageInput" type="file" accept="image/*" multiple />
+            </label>
+            <button type="button" id="clearImageBtn">清空图片</button>
+          </div>
+          <div class="inline-note">优先使用“选择图片”按钮，微信环境不依赖拖拽上传。</div>
+          <div class="preview-wrap" id="previewWrap"></div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">语音输入（转文字）</h3>
+          <div class="btn-row">
+            <button type="button" id="voiceBtn">开始语音输入</button>
+          </div>
+          <div class="voice-state" id="voiceState">语音状态：未开始</div>
+        </div>
+
+        <div class="section">
+          <h3 class="section-title">草稿与缓存</h3>
+          <div class="btn-row">
+            <button type="button" id="clearCacheBtn" class="danger">清理本地缓存</button>
+          </div>
+          <div class="inline-note">仅清本地草稿/任务/调试缓存，不删除 Supabase 云端记录。</div>
+        </div>
+      </section>
+
+      <section class="right">
+        <div class="section normal-only">
+          <h3 class="section-title">GPT 回复区</h3>
+          <div class="output-box" id="normalOutput">回复会显示在这里</div>
+          <div class="output-actions">
+            <button type="button" id="copyReplyBtn">复制 GPT 输出</button>
+          </div>
+        </div>
+
+        <div class="section dev-only dev-panel">
+          <h3 class="section-title">开发模式输出</h3>
+          <div class="dev-subtitle">中文说明区</div>
+          <div class="output-box" id="devSummaryOutput">开发模式下会显示 GPT 的中文说明</div>
+          <div class="output-actions">
+            <button type="button" id="copySummaryBtn">复制说明</button>
+          </div>
+
+          <div class="dev-subtitle">Cursor任务区</div>
+          <div class="output-box" id="devTaskOutput">开发模式下会显示可发送给 Cursor 的任务</div>
+          <div class="output-actions task-primary-actions">
+            <button type="button" id="copyTaskBtn">复制 Cursor 指令</button>
+            <button type="button" id="saveTaskBtn">保存到任务列表</button>
+          </div>
+          <div class="refine-wrap">
+            <div class="dev-subtitle">任务重整工具</div>
+            <div class="output-actions task-refine-actions">
+              <button type="button" data-refine="short">更短</button>
+              <button type="button" data-refine="strict">更严格</button>
+              <button type="button" data-refine="engineering">更工程化</button>
+              <button type="button" data-refine="cursor_only">只输出 Cursor 最终指令</button>
+            </div>
+          </div>
+          <details>
+            <summary><span>附加信息（affected_files / test_points）</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
+            <div class="details-body output-box" id="devMetaOutput">暂无</div>
+          </details>
+        </div>
+
+        <details>
+          <summary><span>任务面板 / 任务队列</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
+          <div class="details-body">
+            <div class="muted">本地任务缓存，刷新不丢失。可选同步 Supabase 云端。</div>
+            <div class="btn-row">
+              <button type="button" id="toggleCloudSyncBtn">云端同步：关闭</button>
+              <button type="button" id="pullCloudTasksBtn">拉取云端任务</button>
+            </div>
+            <div id="taskList"></div>
+          </div>
+        </details>
+
+        <details>
+          <summary><span>最近会话</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
+          <div class="details-body">
+            <select id="sessionSelect"></select>
+            <div class="btn-row">
+              <button type="button" id="newSessionBtn">新建会话</button>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary><span>执行器与本地能力预留区</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
+          <div class="details-body">
+            <div class="muted">本阶段只做占位，不假装已打通。</div>
+            <div class="btn-row">
+              <button type="button" id="sendExecutorBtn">发送到执行器（预留）</button>
+              <button type="button" id="projectScanBtn">项目文件扫描（预留）</button>
+              <button type="button" id="codeAnalyzeBtn">代码分析（预留）</button>
+              <button type="button" id="memoryReadBtn">本地记忆库读取（预留）</button>
+            </div>
+          </div>
+        </details>
+
+        <details id="debugDetails">
+          <summary><span>调试信息（默认折叠）</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
+          <div class="details-body">
+            <div class="output-box" id="debugOutput">暂无调试信息</div>
+            <details>
+              <summary><span>网络状态小面板</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
+              <div class="details-body output-box" id="networkPanel">暂无</div>
+            </details>
+            <div class="btn-row">
+              <button type="button" id="toggleDebugBtn">切换调试开关</button>
+            </div>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>版本：gs-control v2026.03.13-mvp1</span>
+      <span id="envText">环境：检测中</span>
+    </footer>
   </div>
 
   <script>
-    const sendBtn = document.getElementById("sendBtn");
-    const messageInput = document.getElementById("message");
-    const output = document.getElementById("output");
-    const status = document.getElementById("status");
+    const BUILD_VERSION = "gs-control v2026.03.13-mvp1";
+    const STORAGE_KEYS = {
+      state: "gs_control_state_v1",
+      tasks: "gs_control_tasks_v1",
+      sessions: "gs_control_sessions_v1"
+    };
 
-    messageInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        sendBtn.click();
+    const state = {
+      mode: "normal",
+      sessionId: "",
+      selectedImages: [],
+      isSending: false,
+      isRecording: false,
+      debugEnabled: false,
+      cloudTaskSync: false,
+      wechatCompat: /MicroMessenger/i.test(navigator.userAgent),
+      isMobile: /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent),
+      lastError: "",
+      lastRequestMs: 0,
+      lastInputFromVoice: false,
+      devOutput: {
+        human_summary: "",
+        cursor_task_title: "",
+        cursor_task_prompt: "",
+        affected_files: [],
+        notes: [],
+        risk: [],
+        test_points: []
       }
-    });
+    };
 
-    sendBtn.addEventListener("click", async () => {
-      const message = messageInput.value.trim();
-      if (!message) {
-        status.textContent = "请先输入内容";
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      modeSwitch: $("modeSwitch"),
+      messageInput: $("messageInput"),
+      sendBtn: $("sendBtn"),
+      clearInputBtn: $("clearInputBtn"),
+      clearDraftBtn: $("clearDraftBtn"),
+      imageInput: $("imageInput"),
+      clearImageBtn: $("clearImageBtn"),
+      previewWrap: $("previewWrap"),
+      voiceBtn: $("voiceBtn"),
+      voiceState: $("voiceState"),
+      statusText: $("statusText"),
+      normalOutput: $("normalOutput"),
+      copyReplyBtn: $("copyReplyBtn"),
+      devSummaryOutput: $("devSummaryOutput"),
+      devTaskOutput: $("devTaskOutput"),
+      devMetaOutput: $("devMetaOutput"),
+      copySummaryBtn: $("copySummaryBtn"),
+      copyTaskBtn: $("copyTaskBtn"),
+      saveTaskBtn: $("saveTaskBtn"),
+      toggleCloudSyncBtn: $("toggleCloudSyncBtn"),
+      pullCloudTasksBtn: $("pullCloudTasksBtn"),
+      taskList: $("taskList"),
+      sessionSelect: $("sessionSelect"),
+      newSessionBtn: $("newSessionBtn"),
+      sendExecutorBtn: $("sendExecutorBtn"),
+      projectScanBtn: $("projectScanBtn"),
+      codeAnalyzeBtn: $("codeAnalyzeBtn"),
+      memoryReadBtn: $("memoryReadBtn"),
+      clearCacheBtn: $("clearCacheBtn"),
+      debugOutput: $("debugOutput"),
+      networkPanel: $("networkPanel"),
+      toggleDebugBtn: $("toggleDebugBtn"),
+      wechatTip: $("wechatTip"),
+      envText: $("envText"),
+      chipSession: $("chipSession"),
+      chipOpenAI: $("chipOpenAI"),
+      chipSupabase: $("chipSupabase"),
+      chipUpload: $("chipUpload"),
+      chipDebug: $("chipDebug")
+    };
+
+    function nowTs() {
+      return Date.now();
+    }
+
+    function createSessionId() {
+      return "gs_web_" + nowTs();
+    }
+
+    function readJson(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return fallback;
+        return JSON.parse(raw);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function writeJson(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function getSavedState() {
+      return readJson(STORAGE_KEYS.state, null);
+    }
+
+    function persistState() {
+      const data = {
+        mode: state.mode,
+        sessionId: state.sessionId,
+        draft: els.messageInput.value,
+        selectedImages: state.selectedImages,
+        devOutput: state.devOutput,
+        debugEnabled: state.debugEnabled,
+        cloudTaskSync: state.cloudTaskSync
+      };
+      writeJson(STORAGE_KEYS.state, data);
+    }
+
+    function getTasks() {
+      return readJson(STORAGE_KEYS.tasks, []);
+    }
+
+    function setTasks(tasks) {
+      writeJson(STORAGE_KEYS.tasks, tasks);
+    }
+
+    function getSessions() {
+      return readJson(STORAGE_KEYS.sessions, []);
+    }
+
+    function setSessions(list) {
+      writeJson(STORAGE_KEYS.sessions, list);
+    }
+
+    function updateChip(el, text, level) {
+      el.classList.remove("chip-ok", "chip-warn", "chip-bad");
+      if (level === "ok") el.classList.add("chip-ok");
+      if (level === "bad") el.classList.add("chip-bad");
+      if (level !== "ok" && level !== "bad") el.classList.add("chip-warn");
+      const dot = "<span class='chip-dot'></span>";
+      el.innerHTML = dot + text;
+    }
+
+    function setStatus(text) {
+      els.statusText.textContent = text || "";
+    }
+
+    function refreshInputTagState() {
+      document.querySelectorAll(".input-shell").forEach((shell) => {
+        const control = shell.querySelector("textarea, input");
+        if (!control) return;
+        const isEmpty = !String(control.value || "").trim();
+        shell.classList.toggle("is-empty", isEmpty);
+      });
+    }
+
+    function setupDetailAnimations() {
+      document.querySelectorAll("details").forEach((panel) => {
+        const summary = panel.querySelector(":scope > summary");
+        const body = panel.querySelector(":scope > .details-body");
+        if (!summary || !body) return;
+        summary.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (panel.dataset.animating === "1") return;
+          panel.dataset.animating = "1";
+          const isOpen = panel.open;
+          body.style.overflow = "hidden";
+          body.style.transition = "height 0.45s ease, opacity 0.45s ease";
+          if (!isOpen) {
+            panel.open = true;
+            body.style.height = "0px";
+            body.style.opacity = "0";
+            requestAnimationFrame(() => {
+              body.style.height = body.scrollHeight + "px";
+              body.style.opacity = "1";
+            });
+            setTimeout(() => {
+              body.style.height = "";
+              body.style.opacity = "";
+              body.style.transition = "";
+              body.style.overflow = "";
+              panel.dataset.animating = "0";
+            }, 470);
+            return;
+          }
+          body.style.height = body.offsetHeight + "px";
+          body.style.opacity = "1";
+          requestAnimationFrame(() => {
+            body.style.height = "0px";
+            body.style.opacity = "0";
+          });
+          setTimeout(() => {
+            panel.open = false;
+            body.style.height = "";
+            body.style.opacity = "";
+            body.style.transition = "";
+            body.style.overflow = "";
+            panel.dataset.animating = "0";
+          }, 470);
+        });
+      });
+    }
+
+    function setMode(mode) {
+      state.mode = mode === "dev" ? "dev" : "normal";
+      document.body.classList.remove("mode-normal", "mode-dev");
+      document.body.classList.add(state.mode === "dev" ? "mode-dev" : "mode-normal");
+      els.modeSwitch.querySelectorAll(".mode-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.mode === state.mode);
+      });
+      persistState();
+      updateNetworkPanel();
+    }
+
+    function renderImagePreview() {
+      els.previewWrap.innerHTML = "";
+      state.selectedImages.forEach((item, index) => {
+        const wrap = document.createElement("div");
+        wrap.className = "thumb";
+        wrap.innerHTML = "<img alt='image-preview' src='" + item.url + "'/><button type='button' data-remove-image='" + index + "'>删除</button>";
+        els.previewWrap.appendChild(wrap);
+      });
+      updateChip(els.chipUpload, "图片：" + state.selectedImages.length + " 张", state.selectedImages.length > 0 ? "ok" : "warn");
+    }
+
+    function clearImages() {
+      state.selectedImages = [];
+      els.imageInput.value = "";
+      renderImagePreview();
+      persistState();
+    }
+
+    function clearDraftOnly() {
+      els.messageInput.value = "";
+      state.devOutput = {
+        human_summary: "",
+        cursor_task_title: "",
+        cursor_task_prompt: "",
+        affected_files: [],
+        notes: [],
+        risk: [],
+        test_points: []
+      };
+      els.devSummaryOutput.textContent = "开发模式下会显示 GPT 的中文说明";
+      els.devTaskOutput.textContent = "开发模式下会显示可发送给 Cursor 的任务";
+      els.devMetaOutput.textContent = "暂无";
+      refreshInputTagState();
+      persistState();
+    }
+
+    function clearAllLocalCache() {
+      localStorage.removeItem(STORAGE_KEYS.state);
+      localStorage.removeItem(STORAGE_KEYS.tasks);
+      localStorage.removeItem(STORAGE_KEYS.sessions);
+      state.selectedImages = [];
+      state.cloudTaskSync = false;
+      state.sessionId = createSessionId();
+      setSessions([{ id: state.sessionId, createdAt: nowTs() }]);
+      clearDraftOnly();
+      renderSessions();
+      renderTasks();
+      renderImagePreview();
+      updateCloudSyncUi();
+      setStatus("本地缓存已清理（云端记录未删除）");
+      updateSessionUi();
+    }
+
+    async function copyText(text, fallbackHint) {
+      const value = String(text || "").trim();
+      if (!value) {
+        setStatus("没有可复制内容");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(value);
+        setStatus("已复制");
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = value;
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        if (ok) {
+          setStatus("已复制");
+          return;
+        }
+        setStatus(fallbackHint || "复制受限，请手动长按选择复制");
+      }
+    }
+
+    function normalizeDevOutput(raw) {
+      const obj = raw && typeof raw === "object" ? raw : {};
+      const list = (v) => Array.isArray(v) ? v.filter(Boolean).map((x) => String(x)) : [];
+      return {
+        human_summary: String(obj.human_summary || "").trim(),
+        cursor_task_title: String(obj.cursor_task_title || "").trim(),
+        cursor_task_prompt: String(obj.cursor_task_prompt || "").trim(),
+        affected_files: list(obj.affected_files),
+        notes: list(obj.notes),
+        risk: list(obj.risk),
+        test_points: list(obj.test_points)
+      };
+    }
+
+    function renderDevOutput(output) {
+      state.devOutput = normalizeDevOutput(output);
+      els.devSummaryOutput.textContent = state.devOutput.human_summary || "（无开发说明）";
+      els.devTaskOutput.textContent = state.devOutput.cursor_task_prompt || "（无 Cursor 任务）";
+      const lines = [];
+      lines.push("任务标题：" + (state.devOutput.cursor_task_title || "未命名"));
+      lines.push("影响文件：");
+      if (state.devOutput.affected_files.length) {
+        state.devOutput.affected_files.forEach((f) => lines.push("- " + f));
+      } else {
+        lines.push("- 暂无");
+      }
+      lines.push("");
+      lines.push("测试点：");
+      if (state.devOutput.test_points.length) {
+        state.devOutput.test_points.forEach((t) => lines.push("- " + t));
+      } else {
+        lines.push("- 暂无");
+      }
+      lines.push("");
+      lines.push("风险：");
+      if (state.devOutput.risk.length) {
+        state.devOutput.risk.forEach((r) => lines.push("- " + r));
+      } else {
+        lines.push("- 暂无");
+      }
+      els.devMetaOutput.textContent = lines.join("\n");
+      persistState();
+    }
+
+    function addTaskFromCurrent() {
+      const prompt = state.devOutput.cursor_task_prompt.trim();
+      if (!prompt) {
+        setStatus("暂无可保存任务");
+        return;
+      }
+      const tasks = getTasks();
+      tasks.unshift({
+        id: "task_" + nowTs(),
+        title: state.devOutput.cursor_task_title || "开发任务",
+        status: "pending",
+        content: prompt,
+        createdAt: nowTs(),
+        sentToCursor: false
+      });
+      setTasks(tasks.slice(0, 50));
+      renderTasks();
+      setStatus("已保存到任务列表");
+      if (state.cloudTaskSync) {
+        syncTaskToCloud(tasks[0]).catch(() => null);
+      }
+    }
+
+    async function syncTaskToCloud(task) {
+      if (!task) return;
+      try {
+        const response = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({
+            session_id: state.sessionId,
+            title: task.title || "开发任务",
+            status: task.status || "pending",
+            task_content: task.content || "",
+            source: "gs-control"
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data?.ok === false) {
+          throw new Error(data?.message || "云端任务保存失败");
+        }
+        setStatus("任务已同步到云端");
+      } catch (error) {
+        state.lastError = "任务云端同步失败：" + String(error?.message || "unknown");
+        setStatus(state.lastError);
+        updateNetworkPanel();
+      }
+    }
+
+    async function pullCloudTasks() {
+      try {
+        const response = await fetch("/api/tasks?session_id=" + encodeURIComponent(state.sessionId) + "&limit=30", {
+          method: "GET",
+          cache: "no-store"
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data?.ok === false || !Array.isArray(data?.tasks)) {
+          throw new Error(data?.message || "拉取失败");
+        }
+        const localTasks = getTasks();
+        const existingFingerprints = new Set(localTasks.map((t) => String((t.title || "") + "||" + (t.content || "")).trim()));
+        data.tasks.forEach((item) => {
+          const title = String(item?.title || "开发任务");
+          const content = String(item?.task_content || "");
+          const fp = String(title + "||" + content).trim();
+          if (!content || existingFingerprints.has(fp)) return;
+          localTasks.unshift({
+            id: "cloud_" + String(item?.id || nowTs()) + "_" + nowTs(),
+            title,
+            status: String(item?.status || "pending"),
+            content,
+            createdAt: Date.parse(String(item?.created_at || "")) || nowTs(),
+            sentToCursor: false
+          });
+          existingFingerprints.add(fp);
+        });
+        setTasks(localTasks.slice(0, 50));
+        renderTasks();
+        setStatus("云端任务已拉取");
+      } catch (error) {
+        state.lastError = "拉取云端任务失败：" + String(error?.message || "unknown");
+        setStatus(state.lastError);
+        updateNetworkPanel();
+      }
+    }
+
+    function taskStatusLabel(value) {
+      const map = {
+        pending: "待执行",
+        in_progress: "执行中",
+        completed: "已完成",
+        abandoned: "放弃"
+      };
+      return map[value] || "待执行";
+    }
+
+    function renderTasks() {
+      const tasks = getTasks();
+      if (!tasks.length) {
+        els.taskList.innerHTML = "<div class='muted'>暂无任务</div>";
+        return;
+      }
+      els.taskList.innerHTML = "";
+      tasks.forEach((task) => {
+        const card = document.createElement("div");
+        card.className = "task-item";
+        card.dataset.taskId = task.id;
+
+        const head = document.createElement("div");
+        head.className = "task-head";
+        const created = document.createElement("span");
+        created.textContent = new Date(task.createdAt || nowTs()).toLocaleString();
+        const status = document.createElement("span");
+        status.textContent = "状态：" + taskStatusLabel(task.status) + (task.sentToCursor ? " | 已发送" : "");
+        head.appendChild(created);
+        head.appendChild(status);
+
+        const titleWrap = document.createElement("div");
+        titleWrap.className = "input-shell";
+        const title = document.createElement("input");
+        title.className = "task-title";
+        title.setAttribute("data-task-title", "");
+        title.placeholder = "输入任务标题";
+        title.value = String(task.title || "");
+        const titleTag = document.createElement("span");
+        titleTag.className = "input-tag";
+        titleTag.textContent = "输入";
+        titleWrap.appendChild(title);
+        titleWrap.appendChild(titleTag);
+
+        const contentWrap = document.createElement("div");
+        contentWrap.className = "input-shell";
+        const content = document.createElement("textarea");
+        content.className = "task-content";
+        content.setAttribute("data-task-content", "");
+        content.placeholder = "输入任务内容";
+        content.value = String(task.content || "");
+        const contentTag = document.createElement("span");
+        contentTag.className = "input-tag";
+        contentTag.textContent = "输入";
+        contentWrap.appendChild(content);
+        contentWrap.appendChild(contentTag);
+
+        const actions = document.createElement("div");
+        actions.className = "task-actions";
+        const actionList = [
+          ["save", "保存编辑", ""],
+          ["copy", "复制", ""],
+          ["sent", "标记已发送给 Cursor", ""],
+          ["status_pending", "待执行", ""],
+          ["status_in_progress", "执行中", ""],
+          ["status_completed", "已完成", ""],
+          ["status_abandoned", "放弃", ""],
+          ["delete", "删除", "danger"]
+        ];
+        actionList.forEach(([act, label, cls]) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.dataset.taskAct = act;
+          b.textContent = label;
+          if (cls) b.className = cls;
+          actions.appendChild(b);
+        });
+
+        card.appendChild(head);
+        card.appendChild(titleWrap);
+        card.appendChild(contentWrap);
+        card.appendChild(actions);
+        els.taskList.appendChild(card);
+      });
+      refreshInputTagState();
+    }
+
+    function updateSessionUi() {
+      els.chipSession.textContent = "会话：" + state.sessionId;
+      persistState();
+    }
+
+    function updateCloudSyncUi() {
+      if (!els.toggleCloudSyncBtn) return;
+      els.toggleCloudSyncBtn.textContent = "云端同步：" + (state.cloudTaskSync ? "开启" : "关闭");
+    }
+
+    function touchSessionHistory(sessionId) {
+      const sessions = getSessions();
+      const existing = sessions.find((s) => s.id === sessionId);
+      if (!existing) {
+        sessions.unshift({ id: sessionId, createdAt: nowTs() });
+      }
+      setSessions(sessions.slice(0, 30));
+      renderSessions();
+    }
+
+    function renderSessions() {
+      const sessions = getSessions();
+      if (!sessions.length) {
+        setSessions([{ id: state.sessionId, createdAt: nowTs() }]);
+      }
+      const list = getSessions();
+      els.sessionSelect.innerHTML = list.map((s) => {
+        const ts = new Date(s.createdAt || nowTs()).toLocaleString();
+        const selected = s.id === state.sessionId ? "selected" : "";
+        return "<option value='" + s.id + "' " + selected + ">" + s.id + " | " + ts + "</option>";
+      }).join("");
+    }
+
+    function mapUserError(err) {
+      const msg = String(err?.message || err || "");
+      if (/超时|timeout/i.test(msg)) return "网络超时，请稍后重试。";
+      if (/upload|图片|image/i.test(msg)) return "图片上传失败，可先发送文本。";
+      if (/supabase/i.test(msg)) return "Supabase 写入失败，不影响本次对话返回。";
+      if (/微信/i.test(msg)) return "微信环境能力受限，已使用兼容模式。";
+      if (/openai|ai|upstream/i.test(msg)) return "AI 接口不可达，请稍后重试。";
+      return "请求失败：" + msg;
+    }
+
+    function updateDebugOutput(debugData) {
+      if (!debugData) {
+        els.debugOutput.textContent = "暂无调试信息";
+        updateChip(els.chipOpenAI, "OpenAI：未知", "warn");
+        updateChip(els.chipSupabase, "Supabase：未知", "warn");
+        return;
+      }
+      const d = debugData;
+      const lines = [
+        "OpenAI 上游：" + (d.openaiBaseUrl || "未知"),
+        "AI_PROVIDER：" + (d.aiProvider || "openai"),
+        "请求模式：" + (d.mode || state.mode),
+        "图片数量：" + Number(d.imageCount || 0),
+        "Supabase URL 是否配置：" + (d.supabaseUrlSet ? "是" : "否"),
+        "Supabase KEY 是否配置：" + (d.supabaseKeySet ? "是" : "否"),
+        "用户消息写入：" + (d.userMessageWrite || "unknown"),
+        "助手消息写入：" + (d.assistantMessageWrite || "unknown"),
+        "任务写入：" + (d.taskWrite || "unknown"),
+        "最近错误：" + (state.lastError || "无")
+      ];
+      if (d.userMessageError) lines.push("user写入错误：" + d.userMessageError);
+      if (d.assistantMessageError) lines.push("assistant写入错误：" + d.assistantMessageError);
+      if (d.taskWriteError) lines.push("task写入错误：" + d.taskWriteError);
+      els.debugOutput.textContent = lines.join("\n");
+      const openAiOk = Number(d.upstreamStatus || 0) >= 200 && Number(d.upstreamStatus || 0) < 300;
+      updateChip(els.chipOpenAI, "OpenAI：" + (openAiOk ? "已连接" : "异常"), openAiOk ? "ok" : "bad");
+      const supaOk = d.userMessageWrite === "success" || d.assistantMessageWrite === "success";
+      updateChip(els.chipSupabase, "Supabase：" + (supaOk ? "可用" : "待确认"), supaOk ? "ok" : "warn");
+    }
+
+    function updateNetworkPanel() {
+      const envName = state.wechatCompat ? "微信" : (state.isMobile ? "手机浏览器" : "桌面浏览器");
+      const lines = [
+        "当前环境：" + envName,
+        "当前模式：" + (state.mode === "dev" ? "开发模式" : "普通模式"),
+        "微信兼容模式：" + (state.wechatCompat ? "是" : "否"),
+        "版本号：" + BUILD_VERSION,
+        "最近请求耗时：" + (state.lastRequestMs ? (state.lastRequestMs + " ms") : "暂无"),
+        "最近错误原因：" + (state.lastError || "无")
+      ];
+      els.networkPanel.textContent = lines.join("\n");
+      els.envText.textContent = "环境：" + envName;
+    }
+
+    async function toDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("图片读取失败"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function addImages(files) {
+      const list = Array.from(files || []);
+      if (!list.length) return;
+      for (const file of list) {
+        if (state.selectedImages.length >= 10) break;
+        if (!file.type || !file.type.startsWith("image/")) continue;
+        try {
+          const url = await toDataUrl(file);
+          if (url) {
+            state.selectedImages.push({
+              name: file.name || "image",
+              url
+            });
+          }
+        } catch (e) {
+          state.lastError = "上传失败：" + (e?.message || "图片读取失败");
+          setStatus("上传失败，仍可继续发送文本");
+        }
+      }
+      renderImagePreview();
+      persistState();
+    }
+
+    function setSending(flag) {
+      state.isSending = Boolean(flag);
+      els.sendBtn.disabled = state.isSending;
+      els.sendBtn.textContent = state.isSending ? "发送中..." : "发送";
+    }
+
+    async function sendMessage(overrideMessage) {
+      if (state.isSending) return;
+      const rawMessage = typeof overrideMessage === "string" ? overrideMessage : els.messageInput.value;
+      const message = String(rawMessage || "").trim();
+      const hasImages = state.selectedImages.length > 0;
+      if (!message && !hasImages) {
+        setStatus("请先输入文字或选择图片");
         return;
       }
 
-      status.textContent = "正在请求中...";
-      output.textContent = "";
-      document.getElementById("debugBlock").style.display = "none";
-      document.getElementById("debugBlock").textContent = "";
+      const payload = {
+        session_id: state.sessionId,
+        mode: state.mode,
+        source: "gs-control",
+        message: message || "请分析这些图片并给出建议",
+        images: state.selectedImages,
+        from_voice: state.lastInputFromVoice,
+        save_task: false
+      };
 
+      setSending(true);
+      const start = performance.now();
+      setStatus("请求发送中...");
       try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort("timeout"), 35000);
         const response = await fetch("/api/ai", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ message })
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
+        clearTimeout(timer);
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         if (!response.ok || data?.ok === false) {
-          throw new Error(data?.message || "请求失败");
+          throw new Error(data?.message || data?.error || "请求失败");
         }
 
-        const reply =
-          data?.text ||
-          data?.output?.[0]?.content?.[0]?.text ||
-          data?.data?.output?.[0]?.content?.[0]?.text ||
-          "";
-
-        output.textContent = reply || "（未返回文本内容）";
-        status.textContent = "请求成功";
-
-        const db = document.getElementById("debugBlock");
-        if (data?.debug) {
-          const d = data.debug;
-          const yes = (v) => (v ? "是" : "否");
-          const ok = (v) => (v === "success" ? "成功" : "失败");
-          const lines = [
-            "1. 是否读到了 SUPABASE_URL：" + yes(d.supabaseUrlSet),
-            "2. 是否读到了 SUPABASE_SERVICE_ROLE_KEY：" + yes(d.supabaseKeySet),
-            "3. 是否尝试写入 Supabase：" + yes(d.supabaseWriteAttempted),
-            "4. user 消息写入：" + ok(d.userMessageWrite),
-            "5. assistant 消息写入：" + ok(d.assistantMessageWrite)
-          ];
-          if (d.userMessageError) {
-            lines.push("user 写入失败原因：" + d.userMessageError);
-          }
-          if (d.assistantMessageError) {
-            lines.push("assistant 写入失败原因：" + d.assistantMessageError);
-          }
-          db.textContent = lines.join("\n");
-          db.style.display = "block";
+        if (state.mode === "dev") {
+          renderDevOutput(data?.dev_output || {
+            human_summary: data?.text || "",
+            cursor_task_title: "开发任务",
+            cursor_task_prompt: data?.text || "",
+            affected_files: [],
+            notes: [],
+            risk: [],
+            test_points: []
+          });
+          els.normalOutput.textContent = "开发模式输出已更新，请查看说明区和任务区。";
         } else {
-          db.style.display = "none";
-          db.textContent = "";
+          const reply = String(data?.text || "").trim();
+          els.normalOutput.textContent = reply || "（未返回文本内容）";
         }
+
+        state.lastInputFromVoice = false;
+        if (message) {
+          els.messageInput.value = "";
+          refreshInputTagState();
+        }
+        clearImages();
+        setStatus("发送成功");
+        updateDebugOutput(data?.debug || null);
       } catch (error) {
-        output.textContent = "请求失败：" + error.message;
-        status.textContent = "出错了";
-        document.getElementById("debugBlock").style.display = "none";
+        state.lastError = mapUserError(error);
+        setStatus(state.lastError);
+      } finally {
+        state.lastRequestMs = Math.round(performance.now() - start);
+        setSending(false);
+        persistState();
+        updateNetworkPanel();
       }
-    });
+    }
+
+    async function refineDevOutput(kind) {
+      if (!state.devOutput.cursor_task_prompt.trim()) {
+        setStatus("暂无可重整的 Cursor 任务");
+        return;
+      }
+      const map = {
+        short: "请在不丢失关键约束的前提下，压缩成更短版本。",
+        strict: "请改写为更严格的执行规范，减少歧义。",
+        engineering: "请改写为更工程化的任务说明，补全验收和测试点。",
+        cursor_only: "只输出可直接给 Cursor 的最终任务指令，不要解释。"
+      };
+      const instruction = map[kind] || map.short;
+      const prompt = [
+        "基于以下开发任务重新整理：",
+        "",
+        state.devOutput.cursor_task_prompt,
+        "",
+        instruction
+      ].join("\n");
+      await sendMessage(prompt);
+    }
+
+    function setupVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition || state.wechatCompat) {
+        els.voiceBtn.disabled = true;
+        els.voiceState.textContent = state.wechatCompat
+          ? "语音状态：微信环境已降级（可继续文字/图片）"
+          : "语音状态：当前浏览器不支持";
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = "zh-CN";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.onstart = () => {
+        state.isRecording = true;
+        els.voiceState.textContent = "语音状态：录音中...";
+        els.voiceBtn.textContent = "停止语音输入";
+      };
+      recognition.onend = () => {
+        state.isRecording = false;
+        els.voiceState.textContent = "语音状态：已结束";
+        els.voiceBtn.textContent = "开始语音输入";
+      };
+      recognition.onerror = () => {
+        state.lastError = "语音转文字失败，请改用文字输入";
+        els.voiceState.textContent = "语音状态：识别失败，已降级";
+        setStatus(state.lastError);
+        updateNetworkPanel();
+      };
+      recognition.onresult = (event) => {
+        const text = event?.results?.[0]?.[0]?.transcript || "";
+        if (text) {
+          els.messageInput.value = (els.messageInput.value ? (els.messageInput.value + "\n") : "") + text;
+          state.lastInputFromVoice = true;
+          setStatus("语音已转文字，可编辑后发送");
+          refreshInputTagState();
+          persistState();
+        }
+      };
+
+      els.voiceBtn.addEventListener("click", () => {
+        try {
+          if (state.isRecording) {
+            recognition.stop();
+          } else {
+            recognition.start();
+          }
+        } catch {
+          setStatus("语音能力暂不可用，请改用文字输入");
+        }
+      });
+    }
+
+    function bindEvents() {
+      els.modeSwitch.addEventListener("click", (event) => {
+        const btn = event.target.closest(".mode-btn");
+        if (!btn) return;
+        setMode(btn.dataset.mode);
+      });
+
+      els.sendBtn.addEventListener("click", () => sendMessage());
+      els.messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
+        }
+      });
+      els.messageInput.addEventListener("input", persistState);
+      els.messageInput.addEventListener("input", refreshInputTagState);
+      els.clearInputBtn.addEventListener("click", () => {
+        els.messageInput.value = "";
+        refreshInputTagState();
+        persistState();
+      });
+      els.clearDraftBtn.addEventListener("click", () => {
+        clearDraftOnly();
+        setStatus("草稿已清空");
+      });
+      els.clearImageBtn.addEventListener("click", () => {
+        clearImages();
+        setStatus("图片已清空");
+      });
+      els.imageInput.addEventListener("change", async (event) => {
+        await addImages(event.target.files);
+        if (state.selectedImages.length >= 10) {
+          setStatus("最多可附加 10 张图片");
+        }
+      });
+      els.previewWrap.addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-remove-image]");
+        if (!btn) return;
+        const idx = Number(btn.dataset.removeImage);
+        if (!Number.isFinite(idx)) return;
+        state.selectedImages.splice(idx, 1);
+        renderImagePreview();
+        persistState();
+      });
+
+      els.copyReplyBtn.addEventListener("click", () => copyText(els.normalOutput.textContent));
+      els.copySummaryBtn.addEventListener("click", () => copyText(els.devSummaryOutput.textContent));
+      els.copyTaskBtn.addEventListener("click", () => copyText(els.devTaskOutput.textContent, "复制受限，请手动选择任务文本复制"));
+      els.saveTaskBtn.addEventListener("click", addTaskFromCurrent);
+      els.toggleCloudSyncBtn.addEventListener("click", () => {
+        state.cloudTaskSync = !state.cloudTaskSync;
+        updateCloudSyncUi();
+        persistState();
+        setStatus("云端任务同步已" + (state.cloudTaskSync ? "开启" : "关闭"));
+      });
+      els.pullCloudTasksBtn.addEventListener("click", pullCloudTasks);
+      document.querySelectorAll("[data-refine]").forEach((btn) => {
+        btn.addEventListener("click", () => refineDevOutput(btn.dataset.refine));
+      });
+
+      els.taskList.addEventListener("click", async (event) => {
+        const btn = event.target.closest("[data-task-act]");
+        if (!btn) return;
+        const card = event.target.closest("[data-task-id]");
+        if (!card) return;
+        const id = card.dataset.taskId;
+        const act = btn.dataset.taskAct;
+        const tasks = getTasks();
+        const idx = tasks.findIndex((t) => t.id === id);
+        if (idx < 0) return;
+        if (act === "delete") {
+          tasks.splice(idx, 1);
+        } else if (act === "copy") {
+          await copyText(tasks[idx].content, "复制受限，请手动选择任务文本复制");
+          return;
+        } else if (act === "save") {
+          const titleEl = card.querySelector("[data-task-title]");
+          const contentEl = card.querySelector("[data-task-content]");
+          tasks[idx].title = (titleEl?.value || tasks[idx].title || "").trim() || "开发任务";
+          tasks[idx].content = (contentEl?.value || tasks[idx].content || "").trim();
+          if (state.cloudTaskSync) {
+            syncTaskToCloud(tasks[idx]).catch(() => null);
+          }
+        } else if (act === "sent") {
+          tasks[idx].sentToCursor = true;
+        } else if (act.startsWith("status_")) {
+          tasks[idx].status = act.replace("status_", "");
+          if (state.cloudTaskSync) {
+            syncTaskToCloud(tasks[idx]).catch(() => null);
+          }
+        }
+        setTasks(tasks);
+        renderTasks();
+        setStatus("任务已更新");
+      });
+      els.taskList.addEventListener("input", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
+        const shell = target.closest(".input-shell");
+        if (!shell) return;
+        const isEmpty = !String(target.value || "").trim();
+        shell.classList.toggle("is-empty", isEmpty);
+      });
+
+      els.sessionSelect.addEventListener("change", () => {
+        const sid = String(els.sessionSelect.value || "").trim();
+        if (!sid) return;
+        state.sessionId = sid;
+        updateSessionUi();
+        setStatus("已切换会话：" + sid);
+      });
+
+      els.newSessionBtn.addEventListener("click", () => {
+        state.sessionId = createSessionId();
+        touchSessionHistory(state.sessionId);
+        updateSessionUi();
+        setStatus("已新建会话");
+      });
+
+      const reservedAction = (name) => () => {
+        setStatus(name + "：当前为接口预留阶段，暂未打通。");
+      };
+      els.sendExecutorBtn.addEventListener("click", reservedAction("发送到执行器"));
+      els.projectScanBtn.addEventListener("click", reservedAction("项目文件扫描"));
+      els.codeAnalyzeBtn.addEventListener("click", reservedAction("代码分析"));
+      els.memoryReadBtn.addEventListener("click", reservedAction("本地记忆库读取"));
+
+      els.toggleDebugBtn.addEventListener("click", () => {
+        state.debugEnabled = !state.debugEnabled;
+        updateChip(els.chipDebug, "调试：" + (state.debugEnabled ? "开启" : "关闭"), state.debugEnabled ? "ok" : "warn");
+        persistState();
+      });
+
+      els.clearCacheBtn.addEventListener("click", () => clearAllLocalCache());
+    }
+
+    function bootstrap() {
+      const saved = getSavedState();
+      if (saved && typeof saved === "object") {
+        state.mode = saved.mode === "dev" ? "dev" : "normal";
+        state.sessionId = String(saved.sessionId || "");
+        state.selectedImages = Array.isArray(saved.selectedImages) ? saved.selectedImages.slice(0, 10) : [];
+        state.debugEnabled = Boolean(saved.debugEnabled);
+        state.cloudTaskSync = Boolean(saved.cloudTaskSync);
+        if (saved.devOutput && typeof saved.devOutput === "object") {
+          state.devOutput = normalizeDevOutput(saved.devOutput);
+        }
+        els.messageInput.value = String(saved.draft || "");
+      }
+      if (!state.sessionId) {
+        state.sessionId = createSessionId();
+      }
+      touchSessionHistory(state.sessionId);
+      updateSessionUi();
+      setMode(state.mode);
+      renderImagePreview();
+      renderTasks();
+      renderDevOutput(state.devOutput);
+      refreshInputTagState();
+      setupDetailAnimations();
+      setupVoiceInput();
+      bindEvents();
+      updateChip(els.chipDebug, "调试：" + (state.debugEnabled ? "开启" : "关闭"), state.debugEnabled ? "ok" : "warn");
+      updateCloudSyncUi();
+      if (state.wechatCompat) {
+        els.wechatTip.style.display = "block";
+      }
+      updateNetworkPanel();
+      setStatus("准备就绪（" + BUILD_VERSION + "）");
+    }
+
+    bootstrap();
   </script>
 </body>
 </html>
