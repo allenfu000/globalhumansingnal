@@ -141,6 +141,10 @@
       padding: 14px;
     }
 
+    #rightTools {
+      display: block;
+    }
+
     .left {
       border-right: 1px solid var(--border);
       background: var(--panel-soft);
@@ -507,10 +511,12 @@
       }
       .main {
         grid-template-columns: 1fr;
+        gap: 8px;
       }
       .left {
         border-right: none;
-        border-bottom: 1px solid var(--border);
+        border-top: 1px solid var(--border);
+        border-bottom: none;
       }
       .title {
         font-size: 19px;
@@ -522,7 +528,12 @@
         min-height: 42px;
       }
       .right details {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+      }
+      .main > #rightTools {
+        padding: 0 14px 14px;
+        background: var(--panel-soft);
+        border-top: 1px solid var(--border);
       }
       .task-refine-actions {
         justify-content: flex-start;
@@ -589,8 +600,8 @@
       <div class="wechat-tip" id="wechatTip" style="display:none;">当前为微信内置浏览器，已启用兼容模式。</div>
     </header>
 
-    <main class="main">
-      <section class="left">
+    <main class="main" id="mainLayout">
+      <section class="left" id="leftPanel">
         <div class="section">
           <h3 class="section-title">输入区</h3>
           <div class="input-shell is-empty">
@@ -635,7 +646,7 @@
         </div>
       </section>
 
-      <section class="right">
+      <section class="right" id="rightPanel">
         <div class="section normal-only">
           <h3 class="section-title">GPT 回复区</h3>
           <div class="output-box" id="normalOutput">回复会显示在这里</div>
@@ -673,6 +684,7 @@
           </details>
         </div>
 
+        <div id="rightTools">
         <details>
           <summary><span>任务面板 / 任务队列</span><span class="fold-indicator"><span class="fold-arrow">▸</span><span class="fold-open">展开</span><span class="fold-close">收起</span></span></summary>
           <div class="details-body">
@@ -721,6 +733,7 @@
             </div>
           </div>
         </details>
+        </div>
       </section>
     </main>
 
@@ -764,6 +777,10 @@
 
     const $ = (id) => document.getElementById(id);
     const els = {
+      mainLayout: $("mainLayout"),
+      leftPanel: $("leftPanel"),
+      rightPanel: $("rightPanel"),
+      rightTools: $("rightTools"),
       modeSwitch: $("modeSwitch"),
       messageInput: $("messageInput"),
       sendBtn: $("sendBtn"),
@@ -1291,6 +1308,8 @@
         "AI_PROVIDER：" + (d.aiProvider || "openai"),
         "请求模式：" + (d.mode || state.mode),
         "图片数量：" + Number(d.imageCount || 0),
+        "Supabase 历史读取：" + (d.supabaseReadAttempted ? "已尝试" : "未尝试"),
+        "历史上下文条数：" + Number(d.supabaseReadCount || 0),
         "Supabase URL 是否配置：" + (d.supabaseUrlSet ? "是" : "否"),
         "Supabase KEY 是否配置：" + (d.supabaseKeySet ? "是" : "否"),
         "用户消息写入：" + (d.userMessageWrite || "unknown"),
@@ -1298,6 +1317,14 @@
         "任务写入：" + (d.taskWrite || "unknown"),
         "最近错误：" + (state.lastError || "无")
       ];
+      if (d.supabaseReadError) lines.push("历史读取错误：" + d.supabaseReadError);
+      if (Array.isArray(d.historyPreview) && d.historyPreview.length) {
+        lines.push("上下文预览（最近3条）：");
+        d.historyPreview.forEach((item, idx) => {
+          const role = item?.role === "assistant" ? "assistant" : "user";
+          lines.push((idx + 1) + ". [" + role + "] " + String(item?.text || ""));
+        });
+      }
       if (d.userMessageError) lines.push("user写入错误：" + d.userMessageError);
       if (d.assistantMessageError) lines.push("assistant写入错误：" + d.assistantMessageError);
       if (d.taskWriteError) lines.push("task写入错误：" + d.taskWriteError);
@@ -1320,6 +1347,18 @@
       ];
       els.networkPanel.textContent = lines.join("\n");
       els.envText.textContent = "环境：" + envName;
+    }
+
+    function adjustMobileFlow() {
+      if (!els.mainLayout || !els.leftPanel || !els.rightPanel || !els.rightTools) return;
+      const isNarrow = window.matchMedia("(max-width: 900px)").matches;
+      if (isNarrow) {
+        if (els.rightTools.parentElement !== els.mainLayout) {
+          els.mainLayout.appendChild(els.rightTools);
+        }
+      } else if (els.rightTools.parentElement !== els.rightPanel) {
+        els.rightPanel.appendChild(els.rightTools);
+      }
     }
 
     async function toDataUrl(file) {
@@ -1644,6 +1683,7 @@
       });
 
       els.clearCacheBtn.addEventListener("click", () => clearAllLocalCache());
+      window.addEventListener("resize", adjustMobileFlow);
     }
 
     function bootstrap() {
@@ -1678,6 +1718,7 @@
         els.wechatTip.style.display = "block";
       }
       updateNetworkPanel();
+      adjustMobileFlow();
       setStatus("准备就绪（" + BUILD_VERSION + "）");
     }
 

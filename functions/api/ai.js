@@ -1,4 +1,4 @@
-import { insertSupabaseMessage, insertSupabaseTask } from "../lib/storage-supabase.js";
+import { fetchRecentSupabaseMessages, insertSupabaseMessage, insertSupabaseTask } from "../lib/storage-supabase.js";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -135,6 +135,80 @@ function normalizeDevOutput(rawText, parsed) {
   };
 }
 
+function toPlainTextContent(value) {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item?.type === "text" && typeof item?.text === "string") return item.text;
+        if (typeof item?.content === "string") return item.content;
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n");
+  }
+  return "";
+}
+
+function buildDevResponseFormat() {
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "gs_control_dev_output",
+      strict: false,
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          human_summary: { type: "string" },
+          cursor_task_title: { type: "string" },
+          cursor_task_prompt: { type: "string" },
+          affected_files: {
+            type: "array",
+            items: { type: "string" }
+          },
+          notes: {
+            type: "array",
+            items: { type: "string" }
+          },
+          risk: {
+            type: "array",
+            items: { type: "string" }
+          },
+          test_points: {
+            type: "array",
+            items: { type: "string" }
+          }
+        },
+        required: [
+          "human_summary",
+          "cursor_task_title",
+          "cursor_task_prompt",
+          "affected_files",
+          "notes",
+          "risk",
+          "test_points"
+        ]
+      }
+    }
+  };
+}
+
+function buildHistoryPreview(items, maxItems = 3) {
+  const preview = [];
+  for (const item of (items || []).slice(-maxItems)) {
+    const role = item?.role === "assistant" ? "assistant" : "user";
+    const raw = String(item?.content || "").replace(/\s+/g, " ").trim();
+    const text = raw.length > 80 ? `${raw.slice(0, 80)}...` : raw;
+    if (!text) continue;
+    preview.push({ role, text });
+  }
+  return preview;
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
@@ -200,6 +274,15 @@ export async function onRequestPost(context) {
   const timeout = setTimeout(() => controller.abort("timeout"), timeoutMs);
 
   try {
+    let historyMessages = [];
+    let historyLoadError = "";
+    try {
+      historyMessages = await fetchRecentSupabaseMessages(env, sessionId, 12);
+    } catch (e) {
+      historyLoadError = String(e?.message || e || "history_load_failed");
+      historyMessages = [];
+    }
+
     const userContent = [{ type: "text", text: message }];
     for (const image of images) {
       userContent.push({
@@ -215,10 +298,30 @@ export async function onRequestPost(context) {
         content: buildDevSystemPrompt()
       });
     }
+
+    for (const item of historyMessages) {
+      const role = item?.role === "assistant" ? "assistant" : "user";
+      const content = String(item?.content || "").trim();
+      if (!content) continue;
+      messages.push({
+        role,
+        content
+      });
+    }
+
     messages.push({
       role: "user",
       content: userContent
     });
+
+    const requestBody = {
+      model,
+      messages,
+      temperature: mode === "dev" ? 0.2 : 0.6
+    };
+    if (mode === "dev") {
+      requestBody.response_format = buildDevResponseFormat();
+    }
 
     const upstream = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
@@ -226,11 +329,7 @@ export async function onRequestPost(context) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${env.OPENAI_API_KEY}`
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: mode === "dev" ? 0.2 : 0.6
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
 
@@ -264,7 +363,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    const text = toResponseText(data).trim();
+    const text = toPlainTextContent(toResponseText(data)).trim();
     const devParsed = mode === "dev" ? safeJsonParse(text) : null;
     const devOutput = mode === "dev" ? normalizeDevOutput(text, devParsed) : null;
 
@@ -275,6 +374,10 @@ export async function onRequestPost(context) {
       supabaseUrlSet: Boolean(env?.SUPABASE_URL?.trim()),
       supabaseKeySet: Boolean(env?.SUPABASE_SERVICE_ROLE_KEY?.trim()),
       supabaseWriteAttempted: false,
+      supabaseReadAttempted: true,
+      supabaseReadCount: historyMessages.length,
+      supabaseReadError: historyLoadError,
+      historyPreview: buildHistoryPreview(historyMessages, 3),
       upstreamStatus: upstream.status,
       mode,
       imageCount: images.length,
