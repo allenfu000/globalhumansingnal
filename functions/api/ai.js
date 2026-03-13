@@ -143,25 +143,51 @@ export async function onRequestPost(context) {
 
     const text = toResponseText(data);
 
-    // Write-through to Supabase (non-blocking for chat success).
-    await insertSupabaseMessage(env, {
+    // Temporary debug: Supabase write status (no keys exposed).
+    const debug = {
+      supabaseUrlSet: Boolean(env?.SUPABASE_URL?.trim()),
+      supabaseKeySet: Boolean(env?.SUPABASE_SERVICE_ROLE_KEY?.trim()),
+      supabaseWriteAttempted: false,
+      userMessageWrite: "fail",
+      assistantMessageWrite: "fail",
+      userMessageError: "",
+      assistantMessageError: ""
+    };
+
+    const userResult = await insertSupabaseMessage(env, {
       session_id: sessionId,
       role: "user",
       content: message,
       ts: Date.now()
-    }).catch(() => null);
-    await insertSupabaseMessage(env, {
+    }).catch((e) => ({ ok: false, skipped: false, error: String(e?.message || e || "exception") }));
+
+    const assistantResult = await insertSupabaseMessage(env, {
       session_id: sessionId,
       role: "assistant",
       content: text || "",
       ts: Date.now()
+    }).catch((e) => ({ ok: false, skipped: false, error: String(e?.message || e || "exception") }));
+
+    // 临时：固定写入测试，确认后端能否写进 gs_control_messages
+    await insertSupabaseMessage(env, {
+      session_id: "debug-session",
+      role: "debug",
+      content: "debug-write-test",
+      ts: Date.now()
     }).catch(() => null);
+
+    debug.supabaseWriteAttempted = !userResult.skipped || !assistantResult.skipped;
+    debug.userMessageWrite = userResult.ok ? "success" : "fail";
+    debug.assistantMessageWrite = assistantResult.ok ? "success" : "fail";
+    debug.userMessageError = userResult.ok ? "" : (userResult.reason || userResult.error || "fail");
+    debug.assistantMessageError = assistantResult.ok ? "" : (assistantResult.reason || assistantResult.error || "fail");
 
     return jsonResponse({
       ok: true,
       session_id: sessionId,
       text,
-      data
+      data,
+      debug
     });
   } catch (error) {
     if (String(error).includes("timeout")) {
